@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; src: url("assets/kit/fonts/bricolage-grotesque.woff2") format("woff2"); }
+        @font-face { font-family: "Shantell Sans"; font-weight: 300 800; src: url("assets/kit/fonts/shantell-sans.woff2") format("woff2"); }
+        @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+        #lesson-root { position: absolute; inset: 0; overflow: hidden; background: var(--field, #0e4a40); }
+        #lesson-root svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+      </style>
+      <div id="lesson-root" data-composition-id="lesson" data-width="1080" data-height="1350">
+        <svg class="lesson" viewBox="0 0 360 450" width="100%" height="100%" data-layout-allow-overflow="" data-layout-ignore=""></svg>
+      </div>
+      <script>
+        (() => {
+          // "Icons as roles" layout: before and after. Phase A has no intermediary, phase B has one.
+          // The example lesson is a subagent with tests; the build replaces the events with the card's events.
+          // Everything is drawn on the sheet: x 24…336, y 124…378; the title, conclusion and signature stand on the field.
+          const S = window.Sketch, C = S.C;
+          const DUR = 12.4, FADE = 11.7;
+          const root = document.querySelector('[data-composition-id="lesson"]');
+          const s = S.stage(root.querySelector("svg.lesson"), { fade: FADE });
+
+          S.chrome.actors(s, "Same tests.|*Two contexts.*", { series: "1/30", sign: "Your Name" });
+          const A = S.el("g", {}, s.root), B = S.el("g", {}, s.root);
+          S.vis(s, A, 0, 4.6);
+          S.vis(s, B, 4.8, 99);
+          S.text(s, 24, 140, [["running them yourself", C.red]], { size: 16, w: 700 }, 0.2, 0.5, A);
+          S.text(s, 24, 140, [["with a subagent", C.green]], { size: 16, w: 700 }, 4.9, 0.5, B);
+
+          // actors: terminal and context
+          S.drawIn(s, S.icon(s, "terminal", 30, 200, 54, C.ink), 0.1, 0.4);
+          S.text(s, 57, 272, [["tests", C.sub]], { size: 12.5, w: 500, anchor: "middle" }, 0.4, 0.2);
+          S.drawIn(s, S.icon(s, "brain", 266, 200, 54, C.ink), 0.3, 0.5);
+          S.text(s, 293, 272, [["your context", C.sub]], { size: 12.5, w: 500, anchor: "middle" }, 0.6, 0.3);
+          S.meter(s, 232, 284, 104, 11, [[0.6, 0], [3.0, 0.93], [4.6, 0.93], [4.7, 0], [8.0, 0], [8.6, 0.12]],
+            (v) => Math.round(v * 200) + "k / 200k", { at: [232, 312] });
+
+          // phase A: log sheets fly straight into the context
+          const paper = () => { const g = S.el("g", {}); g.appendChild(S.icon(s, "file-text", -10, -10, 20, C.sub, 0.3)); return g; };
+          for (let i = 0; i < 8; i++) {
+            const p = paper();
+            S.drawIn(s, p, -1, 0.01);
+            S.fly(s, p, 0.7 + i * 0.28, 0.7, [62, 227], [165, 168], [293, 227]);
+          }
+          S.drawIn(s, s.rc.line(264, 198, 322, 256, S.o(s, { stroke: C.red, strokeWidth: 2.4 })), 3.2, 0.2, A);
+          S.drawIn(s, s.rc.line(322, 198, 264, 256, S.o(s, { stroke: C.red, strokeWidth: 2.4 })), 3.4, 0.2, A);
+          S.text(s, 336, 344, [["context full", C.red]], { size: 17, w: 700, anchor: "end" }, 3.6, 0.4, A);
+
+          // phase B: the subagent swallows the sheets and hands back one sticker
+          const bot = S.el("g", {}, B), botIn = S.el("g", {}, bot);
+          S.drawIn(s, S.icon(s, "bot", 153, 200, 54, C.violet), 4.9, 0.5, botIn);
+          s.acts.push((t) => { const j = t > 5.6 && t < 7.4 ? Math.sin(t * 70) * 1.35 : 0; botIn.setAttribute("transform", `translate(${j},0)`); });
+          S.text(s, 180, 272, [["subagent", C.violet]], { size: 12.5, w: 700, anchor: "middle" }, 5.2, 0.3, B);
+          const kb = S.el("text", { x: 180, y: 290, "text-anchor": "middle", "font-family": S.SANS, "font-weight": 500, "font-size": 11, fill: C.sub }, B);
+          S.counter(s, kb, 5.5, 1.9, 0, 50, " KB");
+          S.vis(s, kb, 5.5, 99);
+          for (let j = 0; j < 8; j++) {
+            const q = paper();
+            S.drawIn(s, q, -1, 0.01);
+            S.fly(s, q, 5.5 + j * 0.22, 0.5, [62, 227], [118, 176], [180, 230]);
+          }
+          const st = S.el("g", {});
+          st.appendChild(s.rc.rectangle(-25, -13, 50, 26, S.o(s, { fill: C.yellow, fillStyle: "solid", strokeWidth: 1.2 })));
+          S.el("text", { x: 0, y: 4.5, "text-anchor": "middle", "font-family": S.HAND, "font-size": 12, "font-weight": 700, fill: C.ink }, st).textContent = "2 lines";
+          S.fly(s, st, 7.6, 0.7, [180, 217], [240, 172], [293, 180], true);
+          S.drawIn(s, S.icon(s, "check", 312, 186, 24, C.green, 0.5), 8.8, 0.35);
+
+          S.conclusion(s, "Only the *summary* comes back.", 9.0, 0.8);
+          S.cursor(s, [S.At(0.2, 0.3, 140, 358), S.Ln(0.45, 0.6, 57, 230, 57, 230), S.At(1.2, 4.9, 140, 358),
+            S.Ln(5.1, 5.3, 57, 230, 57, 230), S.At(6, 13, 140, 358)], C.ink);
+          S.ripple(s, 57, 230, 0.6, C.ink);
+          S.ripple(s, 57, 230, 5.3, C.ink);
+
+          const tl = gsap.timeline({ paused: true });
+          const clock = { t: 0 };
+          tl.to(clock, { t: DUR, duration: DUR, ease: "none", onUpdate: () => S.render(s, clock.t) }, 0);
+          S.render(s, 0);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["lesson"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

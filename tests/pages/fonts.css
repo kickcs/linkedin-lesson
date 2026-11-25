@@ -1,0 +1,4 @@
+@font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; src: url("/assets/kit/fonts/bricolage-grotesque.woff2") format("woff2"); }
+@font-face { font-family: "Shantell Sans"; font-weight: 300 800; src: url("/assets/kit/fonts/shantell-sans.woff2") format("woff2"); }
+@font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("/assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+html, body { margin: 0; background: #fff; }

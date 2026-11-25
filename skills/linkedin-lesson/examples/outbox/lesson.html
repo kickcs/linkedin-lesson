@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; src: url("assets/kit/fonts/bricolage-grotesque.woff2") format("woff2"); }
+        @font-face { font-family: "Shantell Sans"; font-weight: 300 800; src: url("assets/kit/fonts/shantell-sans.woff2") format("woff2"); }
+        @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+        #lesson-root { position: absolute; inset: 0; overflow: hidden; background: var(--field, #0e4a40); }
+        #lesson-root svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+      </style>
+      <div id="lesson-root" data-composition-id="lesson" data-width="1080" data-height="1350">
+        <svg class="lesson" viewBox="0 0 360 450" width="100%" height="100%" data-layout-allow-overflow="" data-layout-ignore=""></svg>
+      </div>
+      <script>
+        (() => {
+          // Why-lesson: the usual way → one failure with a question pause → outbox → three benefits as a list.
+          // Tall sheet: the benefits take the place of the step captions, otherwise the field under the sheet stays empty until the end.
+          const S = window.Sketch, K = window.Scene, C = S.C;
+          const DUR = 50.11;
+          const root = document.querySelector('[data-composition-id="lesson"]');
+          const s = S.stage(root.querySelector("svg.lesson"), {});
+
+          S.chrome.actors(s, "Transactional *outbox*", { sub: "How a transfer survives a crash", sign: "Your Name" });
+
+          const T = {
+            app: "App", svc: "Transfers service", db: "Database", bank: "Bank", acc: "Anna’s account", req: "send $100", you: "You",
+            zero: "$0", cash: "$100", card: "$100 → Anna", note: "Pay Anna, #42", tag: "#42",
+            // row fields in the database and the request with its responses: status pending/done, sent no/yes, 202 and 200
+            st: "status: ", pend: "pending", fin: "done", sk: "sent: ", no: "no", yes: "yes",
+            post: "POST #42 $100", paid: "200 paid",
+            c1: ["Your service saves the transfer,", "then asks the bank to pay."], done: "200 done",
+            c2: "Saved, then the service crashed.", crash: "crash",
+            ask: "How much does Anna get?", never: "never paid", ans: "The database has the transfer. Anna has $0.",
+            c3: [[["Outbox:", C.blue], [" save the transfer and a “pay Anna”", C.ink]], "note in one write."], one: "one write", acc2: "202 accepted",
+            worker: "Worker", wsub: ["carries notes", "to the bank"], c4: ["A worker carries the note to the bank", "until it says “done”."],
+            board: "What the outbox gives",
+            L: ["Nothing lost: the note outlives a crash.", "No waiting: the app hears “accepted” at once.", "No double pay: #42 is paid once, even sent twice."],
+            again: "sent again", skip: "200 already paid", wait: "no reply yet",
+            end: "Nothing lost, *nothing paid twice*.",
+          };
+          const str = (ln) => (typeof ln === "string" ? ln : ln.map((q) => q[0]).join(""));
+          // Step text is what the viewer reads anew; a repeat ("$100 → Anna", "crash") is counted once.
+          // The question pause lasts chars / 16.5 + 1.5 s: lead 1.5 leaves time to guess, the text appears at the start of the step.
+          const steps = K.pace([
+            { text: [T.app, T.svc, T.db, T.bank, T.acc, T.req, T.zero, T.you], motion: 1.75, lead: 0.1 },
+            { text: [...T.c1, T.card, T.st + T.pend, T.post, T.cash, T.paid, T.fin, T.done], motion: 4.3, lead: 0.1 },
+            { text: [T.c2, T.crash], motion: 2.0, lead: 0.3 },
+            { text: [T.ask], motion: 0.3, lead: 1.5 },
+            { text: [T.never, T.ans], motion: 0.6, lead: 0.1 },
+            { text: [...T.c3.map(str), T.note, T.sk + T.no, T.one, T.acc2], motion: 2.3, lead: 0.3 },
+            { text: [T.worker, ...T.wsub, ...T.c4, T.wait], motion: 4.9, lead: 0.3 },
+            { text: [T.board, T.L[0]], motion: 1.0, lead: 0.1 },
+            { text: [T.L[1]], motion: 1.0, lead: 0.6 },
+            // the benefit row appears at 3.3 s: lead 1.6 gives it time to read its 48 characters before the conclusion
+            { text: [T.again, T.skip, T.yes, T.L[2]], motion: 3.7, lead: 1.6 },
+          ], 0.2, 16.5);
+          const [s0, s1, s2, sq, sa, s3, s4, r1, r2, r3] = steps;
+          const endAt = r3.end, FADE = endAt + T.end.replace(/\*/g, "").length / 16.5 + 1;
+          if (Math.abs(FADE + 0.7 - DUR) > 0.06) throw new Error(`DUR = FADE + 0.7 = ${(FADE + 0.7).toFixed(2)}: set it as DUR and as data-duration in index.html`);
+
+          // ① SCAFFOLD, the whole system at once: phone → service with a database, cable service → bank, Anna's account under the bank.
+          // The "You" frame (service, database, worker) sits under everything; its strokes are drawn last so the seed of the other elements does not shift
+          const youG = K.g(null, s);
+          let a = s0.at;
+          K.box(s, 21, 128, 20, 32, { r: 4 }, a, 0.4);
+          K.line(s, 28, 154, 34, 154, { stroke: C.ink, sw: 1.4 }, a + 0.3, 0.1);
+          K.t(s, 31, 182, T.app, 12, a + 0.1, { w: 700, anchor: "middle", dur: 0.15 });
+          // the server with its label in its own group: it fades as a whole on a crash
+          const svc = K.g(null, s);
+          S.drawIn(s, S.icon(s, "server", 116, 128, 32), a + 0.1, 0.4, svc);
+          K.t(s, 132, 182, T.svc, 12, a + 0.2, { w: 700, anchor: "middle", dur: 0.25 }, svc);
+          const bank = S.el("g", {});
+          bank.appendChild(s.rc.linearPath([[281, 140], [300, 128], [319, 140], [281, 140]], K.ro(s)));
+          [287, 300, 313].forEach((x) => bank.appendChild(s.rc.line(x, 144, x, 157, K.ro(s))));
+          bank.appendChild(s.rc.line(279, 160.5, 321, 160.5, K.ro(s)));
+          S.drawIn(s, bank, a + 0.2, 0.4);
+          K.t(s, 300, 182, T.bank, 12, a + 0.3, { w: 700, anchor: "middle", dur: 0.15 });
+          S.drawIn(s, S.arrow(s, [[45, 145], [112, 145]], { strokeWidth: 1.4 }), a + 0.5, 0.35);
+          S.fit(s, K.t(s, 81, 137, T.req, 11.5, a + 0.6, { anchor: "middle", dur: 0.25 }), 58);
+          K.box(s, 62, 204, 114, 82, {}, a + 0.7, 0.4);
+          K.t(s, 70, 216, T.db, 11.5, a + 0.85, { w: 700, c: K.sub, dur: 0.15 });
+          K.box(s, 262, 204, 76, 70, {}, a + 0.8, 0.4);
+          S.fit(s, K.t(s, 300, 220, T.acc, 11, a + 0.95, { w: 700, c: K.sub, anchor: "middle", dur: 0.2 }), 68);
+          // cable: the service calls the bank itself; with the outbox there is none
+          const cable = K.g(null, s);
+          K.line(s, 154, 145, 275, 145, { stroke: C.ink, sw: 1.3 }, a + 1.05, 0.35, cable);
+
+          // amount on Anna's account: each state has its own node and its own window
+          const amount = (txt, color, from, to) => {
+            const n = S.text(s, 300, 258, [[txt, color]], { size: 21, w: 800, anchor: "middle" }, null, 0);
+            S.vis(s, n, from, to);
+            return n;
+          };
+
+          // step caption on the sheet under the diagram; leaves with the step scene
+          const caption = (G, at, lines) => S.fit(s, lines.map((ln, k) =>
+            K.t(s, 24, 322 + 19 * k, typeof ln === "string" ? [[ln, C.ink]] : ln, 14, at + 0.3 * k, { w: 700, dur: 0.3 }, G)), 312);
+          // phone request: an envelope along the arrow
+          const envelope = (G, at) => {
+            const g = K.g(G, s);
+            g.appendChild(s.rc.rectangle(0, 0, 14, 10, K.ro(s, { fill: C.paper, fillStyle: "solid", strokeWidth: 1.2, roughness: 0.4 })));
+            g.appendChild(s.rc.linearPath([[0, 0], [7, 5.5], [14, 0]], K.ro(s, { strokeWidth: 1.2, roughness: 0.4 })));
+            return K.place(s, g, [[at, 46, 140], [at + 0.45, 96, 140]], at, at + 0.5);
+          };
+          // database row: 0 is the transfer, 1 is the outbox note (yellow); under the text are row fields: [name, value, color, from, to]
+          const dbCard = (G, slot, label, at, fill, fields) => {
+            const g = K.g(G, s), y = 221 + 31 * slot;
+            g.appendChild(s.rc.rectangle(70, y, 98, 28, K.ro(s, { fill: fill || C.paper, fillStyle: "solid", strokeWidth: 1.2, roughness: 0.4 })));
+            S.fit(s, K.t(s, 77, y + 12.5, label, 12, at + 0.1, { dur: 0.2 }, g), 86);
+            (fields || []).forEach(([k, v, c, from, to]) => S.vis(s, K.t(s, 77, y + 24, [[k, K.sub], [v, c]], 10, null, { w: 600 }, g), from, to));
+            return K.pop(s, g, 119, y + 14, at, 0.2);
+          };
+          // reply to the phone under the arrow, between the edge of the "You" frame and the server
+          const reply = (G, label, color, at) => {
+            const g = K.g(G, s);
+            K.t(s, 88, 168, [[label, color]], 10.5, null, { w: 700, anchor: "middle" }, g);
+            return K.pop(s, g, 88, 164, at, 0.2);
+          };
+          // service crash: a filled bolt over the server and "crash" to the right; the server fades (svc below)
+          const crash = (G, at) => {
+            const k = 26 / 24, z = S.el("g", { transform: `translate(119,131) scale(${k})` });
+            z.appendChild(s.rc.path(window.ICONS.zap[0][1], S.o(s, { stroke: C.red, fill: K.lred, fillStyle: "solid", strokeWidth: 1.9 / k, roughness: 0.45, bowing: 1, disableMultiStroke: false })));
+            S.drawIn(s, z, at, 0.25, G);
+            K.t(s, 153, 134, [[T.crash, C.red]], 12, at + 0.15, { w: 700, dur: 0.2 }, G);
+          };
+          // a moving item, centered at (0, 0): a bill, note #42, a request to the bank (white) or a bank response (green);
+          // request and response use monospace 10: width from the character count, no measuring
+          const chip = (G, kind, label, keys, from, to) => {
+            const g = K.g(G, s), mono = kind === "req" || kind === "res", green = kind === "bill" || kind === "res";
+            const w = mono ? label.length * 6 + 10 : kind === "bill" ? 38 : 30;
+            g.appendChild(s.rc.rectangle(-w / 2, -8.5, w, 17, K.ro(s, { stroke: green ? C.green : C.ink, fill: green ? K.lgreen : kind === "req" ? C.paper : C.yellow, fillStyle: "solid", strokeWidth: 1.2, roughness: 0.5 })));
+            S.text(s, 0, mono ? 3.6 : 4, [[label, C.ink]], mono ? { f: S.MONO, size: 10, w: 400, anchor: "middle" } : { size: 11.5, w: 700, anchor: "middle" }, null, 0, g);
+            return K.place(s, g, keys, from, to);
+          };
+          // outline around what a benefit row is about; stays to the end
+          const ring = (x, y, w, h, at) => K.box(s, x, y, w, h, { stroke: C.blue, sw: 1.7, r: 5 }, at, 0.3);
+
+          // ② THE USUAL WAY: request, pending row, POST to the bank, the bank pays and replies 200, row done, 200 to the phone
+          a = s1.at;
+          const G1 = K.g(null, s);
+          caption(G1, a + 0.1, T.c1);
+          envelope(G1, a + 0.3);
+          dbCard(G1, 0, T.card, a + 0.9, null, [[T.st, T.pend, C.orange, a + 0.9, a + 3.55], [T.st, T.fin, C.green, a + 3.55, 1e9]]);
+          // request and response travel along the cable, not above it: above the cable at the frame edge sits "You"
+          chip(G1, "req", T.post, [[a + 1.4, 150, 145], [a + 2.2, 258, 145]], a + 1.4, a + 2.25);
+          chip(G1, "bill", T.cash, [[a + 2.25, 300, 168], [a + 2.65, 300, 250]], a + 2.25, a + 2.67);
+          amount(T.zero, C.ink, s0.at + 1.0, a + 2.65);
+          amount(T.cash, C.ink, a + 2.65, s2.at);
+          chip(G1, "res", T.paid, [[a + 2.8, 247, 145], [a + 3.5, 182, 145]], a + 2.8, a + 3.55);
+          reply(G1, T.done, C.green, a + 3.8);
+
+          // ③ FAILURE: restart from the beginning, the record exists, the service crashed before calling the bank; question pause, then the answer
+          a = s2.at;
+          K.out(s, G1, a, 0.25);
+          const G2 = K.g(null, s);
+          caption(G2, a + 0.3, [T.c2]);
+          envelope(G2, a + 0.4);
+          // no request to the bank: the service crashed earlier, the row stays pending
+          dbCard(G2, 0, T.card, a + 1.0, null, [[T.st, T.pend, C.orange, a + 1.0, 1e9]]);
+          crash(G2, a + 1.6);
+          K.out(s, cable, a + 1.8, 0.3);
+          amount(T.zero, C.ink, a, sa.at);
+          // the question is the second caption line and stays until the answer under it: under Anna's account the "You" frame cut it off
+          K.t(s, 24, 341, T.ask, 14, sq.at, { w: 700, dur: 0.3 }, G2);
+          amount(T.zero, C.red, sa.at, s3.at);
+          K.t(s, 300, 294, [[T.never, C.red]], 12.5, sa.at + 0.1, { w: 700, anchor: "middle", dur: 0.2 }, G2);
+          K.t(s, 24, 366, T.ans, 13, sa.at + 0.3, { w: 600, dur: 0.35 }, G2);
+
+          // ④ OUTBOX: no cable; the transfer and the note go in as one write, the phone hears "accepted" at once
+          a = s3.at;
+          K.out(s, G2, a, 0.25);
+          const G3c = K.g(null, s), G3 = K.g(null, s);
+          caption(G3c, a + 0.3, T.c3);
+          envelope(G3, a + 0.4);
+          // the bank's response reaches the database only on the repeat (r3): then the transfer is done, the note is sent: yes
+          const settled = r3.at + 2.5;
+          dbCard(G3, 0, T.card, a + 1.0, null, [[T.st, T.pend, C.orange, a + 1.0, settled], [T.st, T.fin, C.green, settled, 1e9]]);
+          dbCard(G3, 1, T.note, a + 1.0, C.yellow, [[T.sk, T.no, K.sub, a + 1.0, 1e9]]);
+          // the "one write" frame leaves with the step caption: blue later is only the benefit outlines
+          K.box(s, 66, 219, 106, 65, { stroke: C.blue, sw: 1.3, r: 4 }, a + 1.35, 0.3, G3c);
+          K.t(s, 182, 254, [[T.one, C.blue]], 11.5, a + 1.45, { w: 700, dur: 0.2 }, G3c);
+          reply(G3, T.acc2, C.blue, a + 1.9);
+          amount(T.zero, C.ink, a, s4.at + 3.3);
+
+          // ⑤ WORKER: a line from the database to the bank; the service crashes, the worker still carries the note, the bank pays
+          a = s4.at;
+          K.out(s, G3c, a, 0.25);
+          const G4c = K.g(null, s), G4 = K.g(null, s);
+          caption(G4c, a + 0.3, T.c4);
+          // worker on the line database (176,250) → bank (281,163); shifted left so the right edge of the frame ends before Anna's account
+          K.line(s, 176, 250, 281, 163, { stroke: C.ink, sw: 1.2 }, a + 0.1, 0.4, G4);
+          const gear = K.g(G4, s);
+          S.el("circle", { cx: 214, cy: 218, r: 14, fill: C.paper }, gear);
+          gear.appendChild(S.icon(s, "settings", 203, 207, 22));
+          S.drawIn(s, gear, a + 0.3, 0.4, G4);
+          K.t(s, 214, 248, T.worker, 12, a + 0.5, { w: 700, anchor: "middle", dur: 0.15 }, G4);
+          T.wsub.forEach((ln, k) => K.t(s, 214, 261 + 12 * k, [[ln, K.sub]], 10, a + 0.6 + 0.15 * k, { anchor: "middle", dur: 0.2 }, G4));
+          crash(G4, a + 1.3);
+          // the worker takes the note from the database and sends the bank the same POST the service sent
+          chip(G4, "note", T.tag, [[a + 1.9, 119, 266], [a + 2.15, 176, 250], [a + 2.45, 214, 218]], a + 1.9, a + 2.5);
+          chip(G4, "req", T.post, [[a + 2.5, 214, 218], [a + 3.0, 281, 163]], a + 2.5, a + 3.05);
+          amount(T.cash, C.green, a + 3.3, 1e9);
+          // the bank's response crawls longer than the worker waits and fades at the frame edge: the note in the database stays unmarked;
+          // it passes the bank label quickly, then crawls to the left of it
+          // place and out on different groups: otherwise out shows the group before its place
+          const late = K.g(null, s);
+          chip(late, "res", T.paid, [[a + 3.4, 281, 163], [a + 3.7, 262, 179], [a + 4.6, 250, 189]], a + 3.4, 1e9);
+          K.out(s, late, a + 4.6, 0.3);
+          const wait = K.g(null, s);
+          K.t(s, 206, 199, T.wait, 11, a + 3.7, { w: 700, anchor: "end", dur: 0.25 }, wait);
+          K.out(s, wait, r3.at + 0.1, 0.2);
+
+          // ⑥ BENEFITS in place of the step captions: first the benefit is visible on the scene (outline), then its row
+          const rowLabels = [];
+          const row = (k, at) => rowLabels.push(K.t(s, 24, 334 + 22 * k, [[T.L[k], C.ink]], 13.5, at, { w: 700, dur: 0.35 }));
+          a = r1.at;
+          K.out(s, G4c, a, 0.25);
+          S.fit(s, K.t(s, 24, 310, [[T.board, K.sub]], 12, a + 0.1, { w: 700, dur: 0.3 }), 312);
+          ring(66, 248, 106, 36, a + 0.1);
+          row(0, a + 0.6);
+          a = r2.at;
+          ring(50, 157, 75, 14.5, a + 0.1);
+          row(1, a + 0.6);
+          a = r3.at;
+          K.t(s, 206, 199, [[T.again, K.sub]], 10.5, a + 0.3, { anchor: "end", dur: 0.2 });
+          chip(null, "req", T.post, [[a + 0.3, 214, 218], [a + 0.9, 281, 163]], a + 0.3, a + 0.95);
+          // the bank recognizes #42 and does not pay again; the response waits at the worker while it is read, then goes to the database
+          chip(null, "res", T.skip, [[a + 1.1, 281, 163], [a + 1.6, 208, 217], [a + 2.1, 208, 217], [a + 2.5, 119, 266]], a + 1.1, a + 2.55);
+          // the note turns green and is marked sent: yes, the transfer becomes done (the transfer's row field is in ④)
+          const sent = K.g(null, s);
+          sent.appendChild(s.rc.rectangle(70, 252, 98, 28, K.ro(s, { stroke: C.green, fill: K.lgreen, fillStyle: "solid", strokeWidth: 1.2, roughness: 0.4 })));
+          S.fit(s, K.t(s, 77, 264.5, T.note, 12, null, {}, sent), 86);
+          K.t(s, 77, 276, [[T.sk, K.sub], [T.yes, C.green]], 10, null, { w: 600 }, sent);
+          K.pop(s, sent, 119, 266, a + 2.5, 0.2);
+          ring(271, 236, 58, 28, a + 2.9);
+          row(2, a + 3.3);
+          S.fit(s, rowLabels, 312);
+
+          // the "You" frame: dashed, appears with the scaffold; the phone, the bank and Anna's account are outside
+          const fx = 48, fy = 119, fw = 206, fh = 171, fr = 6;
+          youG.appendChild(s.rc.path(`M${fx + fr} ${fy} H${fx + fw - fr} Q${fx + fw} ${fy} ${fx + fw} ${fy + fr} V${fy + fh - fr} Q${fx + fw} ${fy + fh} ${fx + fw - fr} ${fy + fh} H${fx + fr} Q${fx} ${fy + fh} ${fx} ${fy + fh - fr} V${fy + fr} Q${fx} ${fy} ${fx + fr} ${fy} Z`,
+            S.o(s, { stroke: K.hollow, strokeWidth: 1.3, roughness: 0.5, strokeLineDash: [6, 4] })));
+          K.t(s, fx + fw - 6, fy + 14, [[T.you, K.sub]], 13, null, { w: 800, anchor: "end" }, youG);
+          s.acts.push((t) => { youG.setAttribute("opacity", S.prog(t, s0.at + 1.3, 0.4).toFixed(2)); });
+          // the server with its label fades while it is down: from the failure in ② to the reset in ③ and from the failure in ④ to the end
+          const down = (t, from, to) => S.prog(t, from, 0.25) * (1 - S.prog(t, to, 0.25));
+          s.acts.push((t) => { svc.setAttribute("opacity", (1 - 0.65 * Math.max(down(t, s2.at + 1.6, s3.at), down(t, s4.at + 1.3, 1e9))).toFixed(2)); });
+
+          S.conclusion(s, T.end, endAt, 0.8);
+          // erase at FADE from the reading pace; DUR = FADE + 0.7
+          s.acts.push((t) => { s.root.style.opacity = t > FADE ? 1 - S.prog(t, FADE, 0.35) : 1; });
+
+          const tl = gsap.timeline({ paused: true });
+          const clock = { t: 0 };
+          tl.to(clock, { t: DUR, duration: DUR, ease: "none", onUpdate: () => S.render(s, clock.t) }, 0);
+          S.render(s, 0);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["lesson"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

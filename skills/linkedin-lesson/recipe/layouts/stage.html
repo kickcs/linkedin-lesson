@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; src: url("assets/kit/fonts/bricolage-grotesque.woff2") format("woff2"); }
+        @font-face { font-family: "Shantell Sans"; font-weight: 300 800; src: url("assets/kit/fonts/shantell-sans.woff2") format("woff2"); }
+        @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+        #lesson-root { position: absolute; inset: 0; overflow: hidden; background: var(--field, #0e4a40); }
+        #lesson-root svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+      </style>
+      <div id="lesson-root" data-composition-id="lesson" data-width="1080" data-height="1350">
+        <svg class="lesson" viewBox="0 0 360 450" width="100%" height="100%" data-layout-allow-overflow="" data-layout-ignore=""></svg>
+      </div>
+      <script>
+        (() => {
+          // "Scene and scoreboard" layout on the board: the white sheet holds the frame (participants, question, findings, prompt sheet)
+          // and the step scene changes; the scoreboard accumulates a row per step on the green field below the sheet, the conclusion in chalk beneath.
+          // The example lesson is why a RAG bot makes things up; the build replaces texts, numbers and props with
+          // the card; the zone markup and the timeline tail stay.
+          const S = window.Sketch, K = window.Scene, C = S.C;
+          const DUR = 26.68;
+          const root = document.querySelector('[data-composition-id="lesson"]');
+          const s = S.stage(root.querySelector("svg.lesson"), {});
+
+          S.chrome.stage(s, "Why RAG bots|*make things up*", { series: "7/30", sign: "Your Name" });
+
+          // order follows the rows of a 3 × 2 grid; the findings stand one under another
+          const RULES = [["box", "Opened"], ["gift", "Gift cards"], ["headphones", "Headphones"], ["truck", "Shipping"], ["card", "Refunds"], ["shield", "Warranty"]];
+          const T = {
+            q: "How long does a refund take to reach my card?", who: "Customer", bot: "Shop bot",
+            k1: "Store policy", none: ["2 of 6 rules found,", "neither says how long"], sheet: "prompt",
+            // one prompt-line label on the scene and on the scoreboard: the whole meaning of the line (the condition too); S.fit shrinks a long one
+            L: ["Plain prompt", "+ Always answer", "+ No rule? Say “I don't know”"],
+            n1: "the other 9 give no deadline",
+            quote: ["“…within ", "5 to 10 business days", "…”"], made: "MADE UP",
+            n3: "all 10 say “I don't know”", k2: "Made-up deadlines in 10 runs",
+            end: "Let your bot say *I don't know*.",
+          };
+          // step characters are what the viewer reads in this step; text that stays on screen or repeats on the scoreboard is counted once
+          const steps = K.pace([
+            { text: [T.q, T.who, T.bot], motion: 1.6, lead: 0.1 },
+            { text: [T.k1, ...RULES.map((r) => r[1]), ...T.none], motion: 4.0 },
+            { text: [T.L[0], T.sheet, T.n1, T.k2, "1/10"], motion: 2.6, lead: 0.2 },
+            { text: [T.L[1], ...T.quote, T.made, "9/10"], motion: 3.6, lead: 0.5 },
+            { text: [T.L[2], T.n3, "0/10"], motion: 2.8, lead: 0.5 },
+          ], 0.2, 16.5);
+          const endAt = steps[4].end, FADE = endAt + T.end.replace(/\*/g, "").length / 16.5 + 1;
+          if (Math.abs(FADE + 0.7 - DUR) > 0.06) throw new Error(`DUR = FADE + 0.7 = ${(FADE + 0.7).toFixed(2)}: set it in DUR and in data-duration of index.html`);
+
+          // ① FRAME: speakers on the left, the question on the right; stands until the conclusion. X is the sheet's content column
+          const X = 76;
+          let a = steps[0].at;
+          S.drawIn(s, S.icon(s, "user", 24, 122, 24), a, 0.4);
+          K.t(s, 24, 159, T.who, 10, a + 0.1, { w: 700, dur: 0.2 });
+          S.drawIn(s, S.icon(s, "bot", 24, 167, 24), a + 0.1, 0.4);
+          K.t(s, 24, 204, T.bot, 10, a + 0.2, { w: 700, dur: 0.2 });
+          S.drawIn(s, s.rc.path(K.bubblePath(X, 123, 260, 27, 7, "left"), K.ro(s)), a + 0.3, 0.35);
+          S.fit(s, K.t(s, X + 11, 141, T.q, 11.5, a + 0.6), 240);
+          S.ripple(s, 36, 179, a + 1.3, C.ink);
+
+          // ② STEP SCENE: the bot goes through six rules; two found ones stay in the frame by the bot, the rest leave
+          a = steps[1].at;
+          const shelf = K.g(null, s);
+          const CH = 36, COLS = [52, 56, 70], GAP = 4, ROWS = [167, 207];
+          const cellX = (i) => X + COLS.slice(0, i % 3).reduce((p, w) => p + w + GAP, 0), cellY = (i) => ROWS[Math.floor(i / 3)];
+          const cardPath = (w) => `M4 0 H${w - 4} Q${w} 0 ${w} 4 V${CH - 4} Q${w} ${CH} ${w - 4} ${CH} H4 Q0 ${CH} 0 ${CH - 4} V4 Q0 0 4 0 Z`;
+          // found ones take the start of the row by the bot: rule number → x
+          const found = { 1: X, 4: X + COLS[1] + 5 };
+          const tSweep = a + 0.7, tHit = a + 2.5, tClear = a + 2.7, tMove = a + 2.95, tLand = a + 3.45;
+          RULES.forEach(([pic, label], i) => {
+            const w = COLS[i % 3], x = cellX(i), y = cellY(i), keep = found[i] != null;
+            const outer = K.g(keep ? null : shelf, s), inner = K.g(outer, s);
+            if (keep) S.vis(s, S.el("path", { d: cardPath(w), fill: C.yellow }, inner), tHit, 1e9);
+            inner.appendChild(s.rc.path(cardPath(w), K.ro(s)));
+            K.pic[pic](s, S.el("g", { transform: `translate(${w / 2} 12)` }, inner), C.ink);
+            S.text(s, w / 2, CH - 5, [[label, C.ink]], { size: 10, w: 500, anchor: "middle" }, null, 0, inner);
+            K.pop(s, inner, w / 2, CH / 2, a + 0.1 + 0.07 * i, 0.2);
+            K.place(s, outer, keep ? [[tMove, x, y], [tLand, found[i], ROWS[0]]] : [[0, x, y]]);
+          });
+          K.t(s, X, 257, T.k1, 10, a + 0.5, { w: 700, dur: 0.2 }, shelf);
+          const lens = K.g(null, s);
+          lens.appendChild(S.icon(s, "search", -12, -12, 24, C.ink, 0.3));
+          const mid = (i) => [cellX(i) + COLS[i % 3] / 2, cellY(i) + 20];
+          K.place(s, lens, [[tSweep, 36, 179], [tSweep + 0.35, ...mid(0)], [tSweep + 0.8, ...mid(2)], [tSweep + 1.05, ...mid(3)], [tSweep + 1.5, ...mid(5)],
+            [tHit - 0.05, mid(1)[0], (mid(1)[1] + mid(4)[1]) / 2]], tSweep, tClear);
+          K.out(s, shelf, tClear, 0.25);
+          // author's mark: what is missing in the findings
+          S.fit(s, T.none.map((ln, k) => K.h(s, 200, 182 + 15 * k, [[ln, C.red]], 11.5, tLand + 0.15 + 0.25 * k, { dur: 0.3 })), 136);
+
+          // FRAME: the prompt sheet stays, stickers are only added
+          a = steps[2].at;
+          const sheet = K.g(null, s);
+          sheet.appendChild(s.rc.path("M26 216 H51 L60 225 V260 H26 Z", K.ro(s, { fill: C.paper, fillStyle: "solid" })));
+          sheet.appendChild(s.rc.linearPath([[51, 216], [51, 225], [60, 225]], K.ro(s)));
+          [49.8, 49.8, 46.4].forEach((x2, k) => sheet.appendChild(s.rc.line(31.4, 224.8 + 5.5 * k, x2, 224.8 + 5.5 * k, K.ro(s, { stroke: K.hollow, strokeWidth: 1.5 }))));
+          K.pop(s, sheet, 43, 238, a, 0.22);
+          K.h(s, 24, 276, T.sheet, 10.5, a + 0.15, { dur: 0.2 });
+          const sticker = (color, light, k, at) => {
+            const g = K.g(null, s);
+            g.appendChild(s.rc.rectangle(0, 0, 26.5, 6.6, K.ro(s, { stroke: color, fill: light, fillStyle: "solid", strokeWidth: 1, roughness: 0.4 })));
+            K.place(s, g, [[at, X + 4, 219], [at + 0.5, 29.7, 241.1 + 9 * k]], at);
+          };
+
+          // STEP SCENE: the prompt-line label and 10 replies in a row; leaves when the next step starts
+          const BW = 22, BH = 18, BP = 26, BY = 234;
+          const bubble = (parent, x, y, kind) => {
+            const st = kind === "made" ? { stroke: C.red, fill: K.lred } : kind === "idk" ? { stroke: C.green, fill: K.lgreen } : { stroke: K.hollow };
+            parent.appendChild(s.rc.path(K.bubblePath(x, y, BW, BH, 5, "bl"), K.ro(s, { stroke: st.stroke, fill: st.fill, fillStyle: st.fill ? "solid" : undefined, strokeWidth: 1.2, roughness: 0.6 })));
+            if (kind === "made") K.pic.calendar(s, S.el("g", { transform: `translate(${x + BW / 2} ${y + BH / 2 + 0.5}) scale(1.15)` }, parent), C.red);
+            else if (kind === "idk") S.text(s, x + BW / 2, y + BH / 2 + 4.5, [["?", C.green]], { f: S.HAND, size: 12, w: 700, anchor: "middle" }, null, 0, parent);
+            else [[0.26, 0.74, 0.38], [0.26, 0.58, 0.66]].forEach(([x1, x2, dy]) => parent.appendChild(s.rc.line(x + BW * x1, y + BH * dy, x + BW * x2, y + BH * dy, K.ro(s, { stroke: K.hollow, strokeWidth: 1.2 }))));
+          };
+          const stepStage = (at, label, kinds, t0) => {
+            const G = K.g(null, s);
+            S.fit(s, K.t(s, X, 226, label, 11.5, at + 0.2, { w: 700, dur: 0.3 }, G), 258);
+            kinds.forEach((k, i) => {
+              const g = K.g(G, s), x = X + i * BP;
+              bubble(g, x, BY, k);
+              K.pop(s, g, x + BW / 2, BY + BH / 2, t0 + i * 0.08, 0.2);
+            });
+            return { G, after: t0 + 0.95 };
+          };
+
+          // SCOREBOARD on the field: a row per step, accumulates until the conclusion; the count lives only here — a cell per run
+          const rowLabels = [];
+          const row = (k, label, n, at) => {
+            const y = 328 + 23 * k;
+            rowLabels.push(K.t(s, 22, y, label, 12.5, at, { w: 700, c: C.white, dur: 0.25 }));
+            K.cells(s, 200, y - 8.6, n, 10, at);
+            const st = K.g(null, s);
+            S.text(s, 338, y + 0.5, [[`${n}/10`, n ? C.fred : C.fgreen]], { size: 15, w: 800, anchor: "end" }, null, 0, st);
+            K.pop(s, st, 324, y - 4, at + 0.5 + n * 0.05, 0.2);
+          };
+
+          // ③ simple prompt: made up a deadline 1 time out of 10
+          a = steps[2].at;
+          const R = (hit, kind, other) => Array.from({ length: 10 }, (_, i) => (hit.includes(i) ? kind : other));
+          let sc = stepStage(a, T.L[0], R([4], "made", "none"), a + 0.6);
+          K.h(s, X, 276, T.n1, 12, sc.after, { dur: 0.3 }, sc.G);
+          K.t(s, 22, 306, T.k2, 10.5, sc.after + 0.2, { c: C.soft });
+          row(0, T.L[0], 1, sc.after + 0.2);
+          let prev = sc.G;
+
+          // ④ + pressure line: 9 out of 10, a quote of the made-up deadline and a stamp
+          a = steps[3].at;
+          K.out(s, prev, a, 0.25);
+          sticker(C.red, K.lred, 0, a + 0.3);
+          sc = stepStage(a + 0.3, [[T.L[1], C.red]], R([4], "none", "made"), a + 1.0);
+          const quote = S.fit(s, K.t(s, X, 275, T.quote.map((q) => [q, C.ink]), 11, sc.after, { dur: 0.4 }, sc.G), 186);
+          K.under(s, quote, 1, C.red, sc.after + 0.45, sc.G);
+          K.seal(s, 302, 261.5, T.made, C.red, sc.after + 0.7, -7, sc.G);
+          row(1, T.L[1], 9, sc.after);
+          prev = sc.G;
+
+          // ⑤ + permission line: 0 out of 10, all ten honestly say "I don't know"
+          a = steps[4].at;
+          K.out(s, prev, a, 0.25);
+          sticker(C.green, K.lgreen, 1, a + 0.3);
+          sc = stepStage(a + 0.3, [[T.L[2], C.green]], R([], "idk", "idk"), a + 1.0);
+          K.h(s, X, 276, [[T.n3, C.green]], 12, sc.after, { dur: 0.3 }, sc.G);
+          row(2, T.L[2], 0, sc.after);
+          S.fit(s, rowLabels, 172);
+
+          S.conclusion(s, T.end, endAt, 0.8);
+          // erasing at FADE from the reading pace; DUR = FADE + 0.7
+          s.acts.push((t) => { s.root.style.opacity = t > FADE ? 1 - S.prog(t, FADE, 0.35) : 1; });
+
+          const tl = gsap.timeline({ paused: true });
+          const clock = { t: 0 };
+          tl.to(clock, { t: DUR, duration: DUR, ease: "none", onUpdate: () => S.render(s, clock.t) }, 0);
+          S.render(s, 0);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["lesson"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "linkedin-lesson",
+  "owner": {
+    "name": "Amir Abdusamatov"
+  },
+  "plugins": [
+    {
+      "name": "linkedin-lesson",
+      "source": "./",
+      "description": "Short English LinkedIn posts with an animated GIF lesson that teaches one technical concept from AI or backend to a mixed feed.",
+      "version": "1.0.0"
+    }
+  ]
+}

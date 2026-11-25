@@ -1,0 +1,10 @@
+{
+  "name": "linkedin-lesson",
+  "description": "Short English LinkedIn posts with an animated GIF lesson that teaches one technical concept from AI or backend to a mixed feed.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Amir Abdusamatov"
+  },
+  "license": "MIT",
+  "keywords": ["linkedin", "gif", "lesson", "hyperframes", "agent-skills"]
+}

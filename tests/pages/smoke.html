@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><link rel="stylesheet" href="/fonts.css">
+<script src="/assets/kit/rough.js"></script><script src="/assets/kit/gsap.min.js"></script><script src="/check.js"></script>
+</head><body><script>
+(async () => {
+  check("rough.js loaded", () => ok(typeof rough.svg === "function"));
+  check("GSAP loaded", () => ok(typeof gsap.timeline === "function"));
+  for (const f of ['500 16px "Bricolage Grotesque"', '800 16px "Bricolage Grotesque"', '500 16px "Shantell Sans"', '700 16px "Shantell Sans"', '400 12px "JetBrains Mono"']) {
+    const faces = await document.fonts.load(f);
+    check("font " + f, () => ok(faces.length > 0, "did not load"));
+  }
+  done();
+})();
+</script></body></html>

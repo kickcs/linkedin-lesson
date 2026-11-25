@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Still key frame before the build: layout board, title, subtitle and conclusion from the card.
+     Open it over http (bin/preview.mjs): Chrome does not load fonts from file://. -->
+<style>
+  @font-face { font-family: "Bricolage Grotesque"; font-weight: 200 800; src: url("fonts/bricolage-grotesque.woff2") format("woff2"); }
+  @font-face { font-family: "Shantell Sans"; font-weight: 300 800; src: url("fonts/shantell-sans.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("fonts/jetbrains-mono-400.woff2") format("woff2"); }
+  html, body { margin: 0; background: var(--field, #0e4a40); }
+  svg { display: block; }
+</style>
+<script src="rough.js"></script>
+<script src="icons.js"></script>
+<script src="theme.js"></script>
+<script src="sketch.js"></script>
+</head>
+<body>
+<svg id="frame" viewBox="0 0 360 450" width="1080" height="1350"></svg>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search), S = window.Sketch;
+  const FONTS = [`800 35px "${S.SANS}"`, `500 16px "${S.SANS}"`, `500 16px "${S.HAND}"`];
+  await Promise.allSettled(FONTS.map((f) => document.fonts.load(f)));
+  // The font size after shrinking is correct only if the fonts loaded rather than fell back to substitutes
+  const fontsOk = FONTS.every((f) => document.fonts.check(f));
+  const layout = S.chrome[q.get("layout")] ? q.get("layout") : "actors";
+  const s = S.stage(document.getElementById("frame"), {});
+  const made = S.chrome[layout](s, q.get("title") || "", { sub: q.get("sub") || undefined, series: q.get("series") || undefined, sign: q.get("sign") || undefined });
+  const end = q.get("end") ? S.conclusion(s, q.get("end")) : null;
+  S.render(s, 0);
+  const size = (node) => +node.getAttribute("font-size");
+  const out = document.createElement("pre");
+  out.id = "out";
+  out.style.display = "none";
+  out.textContent = JSON.stringify({ fontsOk, title: size(made.title[0]), sub: made.sub ? size(made.sub) : null, end: end ? size(end) : null });
+  document.body.appendChild(out);
+})();
+</script>
+</body>
+</html>
