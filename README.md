@@ -107,7 +107,7 @@ tells an agent working on the fork the same.
 6. **Approval**: the card, the hook options, the text and a key frame.
 7. **Build**: HyperFrames renders the GIF from the recipe in
    [`skills/linkedin-lesson/recipe/`](skills/linkedin-lesson/recipe/); checks cover size (5 MB),
-   frames (250), the loop seam and reading on a phone.
+   frames (500), the loop seam and reading on a phone.
 8. **Delivery**: the GIF, the post text and how to upload it (Media → Photo, so it keeps moving).
 
 ## Repository layout

@@ -59,7 +59,7 @@ Numbers without a source do not go here.
   signature.
 - **Theme:** `$B/theme.json` if the brand has one, otherwise the recipe's chalkboard.
 - **Duration:** DUR = FADE + 0.7 by reading pace, no limit in seconds; fade 0.35 s; the conclusion
-  holds for its characters / 16.5 + 1 s from the start of typing. After `gifpack`, up to 250 frames.
+  holds for its characters / 16.5 + 1 s from the start of typing. After `gifpack`, up to 500 frames.
 
 ## Zones (stage and “why” on the tall sheet)
 

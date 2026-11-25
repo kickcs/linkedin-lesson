@@ -33,9 +33,9 @@ test("a foreign frame size and a short duration are errors", () => {
   assert.match(verdict(parseGif(gif({ w: 1080, h: 1080 }))).errors.join(), /1080×1080/);
   assert.match(verdict(parseGif(gif({ frames: 30 }))).errors.join(), /duration/);
 });
-test("250 frames are fine, more than 250 is an error", () => {
-  assert.deepEqual(verdict(parseGif(gif({ frames: 250, delay: 20 }))).errors, []);
-  assert.match(verdict(parseGif(gif({ frames: 251 }))).errors.join(), /251 frames, LinkedIn takes up to 250/);
+test("500 frames are fine, more than 500 is an error", () => {
+  assert.deepEqual(verdict(parseGif(gif({ frames: 500, delay: 20 }))).errors, []);
+  assert.match(verdict(parseGif(gif({ frames: 501 }))).errors.join(), /501 frames, LinkedIn takes up to 500/);
 });
 test("the fallback frame size 720×900 is allowed", () => assert.deepEqual(verdict(parseGif(gif({ w: 720, h: 900 }))).errors, []));
 test("not a GIF is a parse error", () => assert.throws(() => parseGif(Buffer.from("PNG....")), /not a GIF/));

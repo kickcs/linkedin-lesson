@@ -3,7 +3,7 @@ version: 1
 name: LinkedIn lesson GIF
 description: >
   A silent looping educational GIF for LinkedIn. 4–5 events and a conclusion, each held while its
-  text is read; the loop is up to 250 frames after gifpack. The frame is a school chalkboard: the
+  text is read; the loop is up to 500 frames after gifpack. The frame is a school chalkboard: the
   green field holds what stays and accumulates (series, title, subtitle, board, conclusion, author
   signature), the white sheet on it holds the scene, which draws itself: rough.js strokes appear,
   hand-drawn Lucide icons play roles, objects fly and count. The title stands from frame 0, the
@@ -87,7 +87,7 @@ motion:
 render:
   gif: "npx --yes hyperframes@0.9.19 render --format gif --fps 15 --gif-loop 0 --output renders/<slug>.gif"
   pack: "node $R/bin/gifpack.mjs renders/<slug>.gif — right after the render: merges frames that change nothing into the previous one; pixels and duration stay the same"
-  budget: "≤ 5 MB (target ≤ 4.5 MB) and ≤ 250 frames after gifpack (LinkedIn Images API: “GIF format supports up to 250 frames”, learn.microsoft.com, read 2026-10-15); otherwise, in order: --fps 12 → 720×900 frame (edits in Wiring) → MP4. Do not cut reading pauses: after gifpack they cost neither frames nor bytes"
+  budget: "≤ 5 MB (target ≤ 4.5 MB) and ≤ 500 frames after gifpack (LinkedIn help, Media file types supported on LinkedIn: “The limit for a GIF is 500 frames or 36,152,320 pixels.”, linkedin.com/help/linkedin/answer/a564109, read 2026-11-25; the Images API and ads take 250: for them compare the `frames` field of the gifcheck JSON line with 250); otherwise, in order: --fps 12 → 720×900 frame (edits in Wiring) → MP4. Do not cut reading pauses: after gifpack they cost neither frames nor bytes"
   mp4: "last move: the same frame as MP4 (`render --format mp4 --output renders/<slug>.mp4`); warn the user that LinkedIn will show a player, not a loop"
   debug: "check or render failed — debug with the hyperframes-cli skill"
   check: "node $R/bin/gifcheck.mjs renders/<slug>.gif"

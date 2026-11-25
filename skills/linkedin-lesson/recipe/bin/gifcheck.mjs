@@ -3,7 +3,7 @@
 import { readFileSync, realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-export const LIMIT = 5_000_000, TARGET = 4_500_000, MAX_FRAMES = 250; // frames: the LinkedIn limit for GIF
+export const LIMIT = 5_000_000, TARGET = 4_500_000, MAX_FRAMES = 500; // frames: LinkedIn help for post media; the Images API and ads take 250
 const SIZES = [[1080, 1350], [720, 900]];
 
 export function parseGif(buf) {

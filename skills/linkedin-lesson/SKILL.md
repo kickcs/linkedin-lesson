@@ -258,7 +258,7 @@ Call `hyperframes` and hand it the card as a finished plan. In the request:
   new check may fail on something the recipe has never been run against;
 - render with `npx --yes hyperframes@0.9.19 render --format gif --fps 15 --gif-loop 0 --output renders/<slug>.gif`,
   immediately followed by `node $R/bin/gifpack.mjs renders/<slug>.gif`: it merges frames that change
-  nothing; otherwise the reading pauses do not fit into LinkedIn's 250 frames.
+  nothing; otherwise the reading pauses do not fit into LinkedIn's 500 frames.
 
 `hyperframes` is a skill in the same session, not a separate executor: you build the project and edit
 `compositions/lesson.html` yourself. Everything in the frame is drawn by the recipe's engine: Lucide
@@ -285,9 +285,10 @@ node $R/bin/gifcheck.mjs renders/<slug>.gif
 ```
 
 `gifcheck` checks the file size, the frame (1080×1350 or the fallback 720×900), the frame count (up
-to 250, the LinkedIn limit), a duration of at least 8 s and the loop. `stat`, `open` and “looks fine”
-do not replace it. A clean run prints one JSON line to stdout and nothing else: `!` and `✗` go to
-stderr, so look at the exit code and stderr, not at the silence.
+to 500, the LinkedIn limit for a GIF in a post; the Images API and ads take 250), a duration of at
+least 8 s and the loop. `stat`, `open` and “looks fine” do not replace it. A clean run prints one JSON
+line to stdout and nothing else: `!` and `✗` go to stderr, so look at the exit code and stderr, not at
+the silence.
 
 The 5 MB limit is hard (`✗`). The target is 4.5 MB: above it `gifcheck` prints `!` and still returns
 0, but the ladder starts already at `!`. One move at a time, re-running render, `gifpack` and
@@ -295,7 +296,7 @@ The 5 MB limit is hard (`✗`). The target is 4.5 MB: above it `gifcheck` prints
 from the Wiring section of the recipe's `frame.md`, do not touch `viewBox`; after them gifcheck must
 show 720×900, `data-width`/`data-height` alone are not enough: `check` gives
 `root_dimensions_mismatch`). If it is still over 5 MB after that, deliver an MP4 of the same frame
-and warn that the feed will show a player. Over 250 frames (`✗`) — `--fps 12`, then less motion:
+and warn that the feed will show a player. Over 500 frames (`✗`) — `--fps 12`, then less motion:
 fewer flights and less typing. Do not cut reading pauses for bytes or for frames: after `gifpack`
 they cost neither.
 

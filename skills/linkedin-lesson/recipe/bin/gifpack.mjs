@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Merges frames that change nothing on screen into the previous one: reading pauses are long, and
-// LinkedIn takes GIFs of up to 250 frames. Pixels are not re-encoded, the duration is the same.
+// LinkedIn takes GIFs of up to 500 frames. Pixels are not re-encoded, the duration is the same.
 import { readFileSync, writeFileSync, realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
