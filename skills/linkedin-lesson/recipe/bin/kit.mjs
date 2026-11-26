@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Copies the recipe kit into a project, adds GSAP and the brand theme. GSAP's license is not MIT, so this repo
+// Copies the kit of a look into a project, adds GSAP and the brand theme. GSAP's license is not MIT, so this repo
 // does not ship the file: it comes from npm (pinned version) and is cached in ~/.cache/linkedin-lesson.
-import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { homedir, tmpdir } from "node:os";
 import { dirname, extname, join, resolve } from "node:path";
@@ -11,7 +11,19 @@ import vm from "node:vm";
 
 export const GSAP_VERSION = "3.14.2";
 const here = dirname(fileURLToPath(import.meta.url));
-export const KIT = join(here, "..", "kit");
+export const LOOKS = join(here, "..", "looks");
+export const DEFAULT_LOOK = "board";
+// the brand theme is the board's: its palette and font roles
+export const KIT = join(LOOKS, "board", "kit");
+
+// a look is a folder looks/<id> with look.json, kit/ and layouts/
+export const lookIds = () => readdirSync(LOOKS).filter((d) => existsSync(join(LOOKS, d, "look.json"))).sort();
+export function look(id = DEFAULT_LOOK) {
+  if (!lookIds().includes(id)) throw new Error(`unknown look "${id}", known: ${lookIds().join(", ")}`);
+  const dir = join(LOOKS, id);
+  // layouts is look.json's map of skeleton → DUR; their folder is layoutDir
+  return { ...JSON.parse(readFileSync(join(dir, "look.json"), "utf8")), id, dir, kit: join(dir, "kit"), layoutDir: join(dir, "layouts") };
+}
 
 // node_modules/gsap next to the repo (development), else the cache, else download it into the cache
 export function gsapPath() {
@@ -110,25 +122,27 @@ export function writeTheme(dest, file) {
   return r.warnings;
 }
 
-export function installKit(dest, themeFile) {
+export function installKit(dest, themeFile, lookId) {
+  const l = look(lookId);
+  if (themeFile && !l.theme) throw new Error(`the ${l.name} look takes no brand theme: build without --theme`);
   if (themeFile) { const r = readTheme(themeFile); if (r.errors.length) throw new Error(r.errors.join("\n")); }
   rmSync(dest, { recursive: true, force: true });
-  cpSync(KIT, dest, { recursive: true });
+  cpSync(l.kit, dest, { recursive: true });
   copyFileSync(gsapPath(), join(dest, "gsap.min.js"));
   return themeFile ? writeTheme(dest, themeFile) : [];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   let a;
-  try { a = parseArgs({ allowPositionals: true, options: { theme: { type: "string" } } }); } catch (e) { a = null; }
+  try { a = parseArgs({ allowPositionals: true, options: { theme: { type: "string" }, look: { type: "string", default: DEFAULT_LOOK } } }); } catch (e) { a = null; }
   const dest = a && a.positionals[0];
-  if (!dest) { console.error("usage: kit.mjs <dest, e.g. assets/kit> [--theme <brand>/theme.json]"); process.exit(2); }
+  if (!dest) { console.error(`usage: kit.mjs <dest, e.g. assets/kit> [--look ${lookIds().join("|")}] [--theme <brand>/theme.json]`); process.exit(2); }
   try {
-    const warnings = installKit(resolve(dest), a.values.theme && resolve(a.values.theme));
+    const warnings = installKit(resolve(dest), a.values.theme && resolve(a.values.theme), a.values.look);
     for (const w of warnings) console.error("! " + w);
   } catch (e) {
     for (const line of e.message.split("\n")) console.error("✗ " + line);
     process.exit(1);
   }
-  console.log(`kit → ${dest} (GSAP ${GSAP_VERSION}${a.values.theme ? `, theme ${a.values.theme}` : ""})`);
+  console.log(`kit ${a.values.look} → ${dest} (GSAP ${GSAP_VERSION}${a.values.theme ? `, theme ${a.values.theme}` : ""})`);
 }

@@ -43,13 +43,19 @@ One concrete case on the real parts of the system, through which the GIF shows t
 “$100 to Anna”, “a shopper asks about open-ear headphones”. A GIF has one scenario.
 _Avoid_: framing, example, narrative
 
+**Look**:
+How the GIF is drawn: palette, fonts, zones, layouts and the engine that draws them, such as Board
+(a chalkboard) or Cards (parts as cards). The user picks one per lesson; the story and the card's
+content do not change with it.
+_Avoid_: skin, style, theme, variant
+
 **Layout**:
-How the GIF frame is split into zones and what lives in which zone.
+How the GIF frame of a look is split into zones and what lives in which zone.
 _Avoid_: template, mockup
 
 **Theme**:
-A brand's own colors, fonts and stroke roughness for the GIF, on top of the default chalkboard look.
-The frame's zones and sizes stay the same under any theme.
+A brand's own colors, fonts and stroke roughness for a look that takes one (Board), on top of its
+defaults. The frame's zones and sizes stay the same under any theme.
 _Avoid_: skin, style, template
 
 **Pause question**:

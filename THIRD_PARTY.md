@@ -17,7 +17,8 @@ that repository that are not bundled here; install the full set from there if yo
 
 ## Recipe kit
 
-Fonts, rough.js and Lucide icons in `skills/linkedin-lesson/recipe/kit/` keep their own licenses,
-listed in `kit/LICENSES.md`. GSAP is not included: `recipe/bin/kit.mjs` downloads the pinned
+Each look's kit in `skills/linkedin-lesson/recipe/looks/<look>/kit/` lists its fonts and code with
+their licenses in its `LICENSES.md`: Bricolage Grotesque, Shantell Sans, JetBrains Mono, rough.js and
+Lucide icons in Board; Overpass, JetBrains Mono and Lucide icons in Cards. GSAP is not included: `recipe/bin/kit.mjs` downloads the pinned
 version from npm when a lesson is built. GSAP is under GreenSock's Standard "No Charge" license,
 <https://gsap.com/standard-license>.

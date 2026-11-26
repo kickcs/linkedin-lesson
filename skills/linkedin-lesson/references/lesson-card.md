@@ -2,8 +2,9 @@
 
 Template for `~/.media/brands/<brand>/drafts/<slug>-LESSON.md`. Notes are in the user's language,
 frame and post texts in English. The sections from “Lesson type” to “Transfer” carry over from the
-story the user understood at step 3. The GIF look — field, fonts, palette, zone coordinates — is set
-by the recipe's `frame.md` and the brand's `theme.json`.
+story the user understood at step 3. The GIF contract is the recipe's `frame.md`; the look picked at
+step 4 — field, fonts, palette, layouts, zone coordinates — is its `looks/<look>/look.md` (in Board,
+with the brand's `theme.json`).
 
 ## Lesson type
 
@@ -28,21 +29,26 @@ prototype in `research/` runs these steps, and the GIF events draw them.
 
 ## Analogy
 
-The analogy the user picked and where it breaks — or “no analogy”. Into the post per step 5 of the
+The analogy the user picked and where it breaks — or “no analogy”. Into the post per step 6 of the
 skill; the GIF has none.
 
 ## Transfer
 
-The same trick on another case, in one sentence. Into the post per step 5 of the skill.
+The same trick on another case, in one sentence. Into the post per step 6 of the skill.
 
 ## Layout
 
-By lesson type: “why” → `stage`, “how it works” → `actors`, “how they differ” → `actors` with two
-`Sketch.frame` panels. If in “why” the first board line appears only in the last third of the GIF
-(benefits after the fix), use the tall sheet `chrome.actors`: in `stage` the field below the sheet
-stays empty until then. Step captions then sit below the diagram, and the benefits take their place
-as a list. What we do not draw, though it is true: one line, so that the diagram holds only the key
-points.
+The look from step 4 and its layout for the lesson type, as the look's `look.md` (Layouts) says:
+
+- **Board:** “why” → `stage`, “how it works” → `actors`, “how they differ” → `actors` with two
+  `Sketch.frame` panels. If in “why” the first board line appears only in the last third of the GIF
+  (benefits after the fix), use the tall sheet `chrome.actors`: in `stage` the field below the sheet
+  stays empty until then. Step captions then sit below the diagram, and the benefits take their
+  place as a list.
+- **Cards:** `system` for every type; which parts are cards, in which row, and what the main card
+  holds (a steps panel, a pool, a cache); in “how they differ”, the two columns.
+
+What we do not draw, though it is true: one line, so that the diagram holds only the key points.
 
 ## Facts
 
@@ -54,28 +60,27 @@ Numbers without a source do not go here.
 ## Frame
 
 - **Title:** the technique's name on one line, up to ~20 characters: `Transactional *outbox*`. The
-  accent in `*asterisks*` gets a chalk line. Stands from frame 0.
+  accent in `*asterisks*` gets a chalk line in Board; Cards has no accent and drops the asterisks.
+  Stands from frame 0.
 - **Subtitle:** the question or problem the GIF answers, up to ~40 characters:
   `How a transfer survives a crash`. Stands from frame 0 under the title.
-- **Conclusion:** what the technique gives, in one line, up to 8 words and ~30 characters, the
-  accent in `*asterisks*`. The last event.
+- **Conclusion:** what the technique gives, up to 8 words and ~30 characters, the accent in
+  `*asterisks*` in Board: one line in Board, one or two (“|”) in Cards. The last event.
 - **Series** (if the post is from a numbered series): `1/30`, the number and the series length — in
   the GIF, “Day 1 of 30” and a tick strip.
 - **Frame signature:** the “Frame signature” line of the brand profile; if there is no such line, no
   signature.
-- **Theme:** `$B/theme.json` if the brand has one, otherwise the recipe's chalkboard.
+- **Look:** the look from step 4 (`board` or another id from `looks.md`) and its layout.
+- **Theme:** in a look that takes one (Board), `$B/theme.json` if the brand has one; otherwise the
+  look's own palette.
 - **Duration:** DUR = FADE + 0.7 by reading pace, no limit in seconds; fade 0.35 s; the conclusion
   holds for its characters / 16.5 + 1 s from the start of typing. After `gifpack`, up to 500 frames.
 
-## Zones (stage and “why” on the tall sheet)
+## Zones
 
-- **Scaffold** — stays until the conclusion: participants, question, findings, the prompt sheet with
-  stickers.
-- **Scenes** — one per step, each leaves at the start of the next: which objects carry the step's
-  fact (replies, cards, a quote, a stamp), no digits.
-- **Board** — one line per step or per benefit: the caption (the same as on the scene), cells by the
-  number of runs and the score from “Facts”. The score lives only on the board. On the tall sheet,
-  the benefits are a dark list in place of the step captions, without cells.
+The zones of the look and layout (`look.md`, Layouts: in Board's stage — scaffold, scenes, board; in
+Cards — parts, states and chips, band), each with what of this lesson goes into it: what stands from
+frame 0, what each step changes and when it leaves, what accumulates. Each fact lives in one zone.
 
 ## Texts in the frame
 
@@ -96,8 +101,8 @@ In a silent GIF the captions carry what a voice would say in a video, so they ar
 ## GIF events
 
 The flow follows the lesson type (step 3 of the skill). The whole system is drawn first, then the GIF
-moves to the parts. One line per action plus the conclusion: second — what appears — Sketch or Scene
-primitive, with the character count next to it.
+moves to the parts. One line per action plus the conclusion: second — what appears — the look's
+engine function, with the character count next to it.
 
 An action is one thing the viewer watches happen: a person taps, a request flies, a reply comes back,
 a row changes its status, a connection is taken or given back. Each action has its own caption, and
@@ -118,13 +123,14 @@ per second from its appearance, and no earlier than the end of the motion + 0.5 
 holds for its characters / 16.5 + 1.5 s, then the answer comes. In a “why” lesson each benefit is
 first visible on the scene, then its line appears.
 
-- 0.1 — <what> — <drawIn | text | cursor | fly | meter | counter | Scene.pop | place | out | seal | …>
+- 0.1 — <what> — <in Board: drawIn | text | cursor | fly | meter | counter | Scene.pop | place | out | seal | …;
+  in Cards: say | chip | packet | enter | hl | done | ring | fix | benefits | …>
 
 ## Post text
 
 Hook variants — 3–4 first sentences on different `hook-writer` mechanisms, each with a line: the
-mechanism and which problem it names. The user chooses at step 6; the chosen one goes into the text
-below. Three paragraphs, up to 700 characters including hashtags; order and rules — step 5 of the
+mechanism and which problem it names. The user chooses at step 7; the chosen one goes into the text
+below. Three paragraphs, up to 700 characters including hashtags; order and rules — step 6 of the
 skill.
 
 1. <hook> — <mechanism>: <which problem it names>
@@ -153,8 +159,8 @@ and what surfaces from it in production>
       per second, no camera zooms.
 - [ ] A “why” lesson has one failure and one fix; each benefit is visible on the scene before its line.
 - [ ] In “why”, the steps after appear on the scene one by one, in the words of “Mechanism”.
-- [ ] The field below the sheet does not stay empty until the last third of the GIF: otherwise the
-      layout is the tall sheet.
+- [ ] In Board, the field below the sheet does not stay empty until the last third of the GIF:
+      otherwise the layout is the tall sheet.
 - [ ] The pause question comes before the outcome and holds according to the pace.
 - [ ] A backend lesson shows the row status, the request and the response at every step where they
       change.

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!-- Still key frame before the build: the field, title, subtitle and conclusion from the card.
+     Open it over http (bin/preview.mjs): Chrome does not load fonts from file://. -->
+<style>
+  @font-face { font-family: "Overpass"; font-weight: 100 900; src: url("fonts/overpass.woff2") format("woff2"); }
+  @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("fonts/jetbrains-mono-400.woff2") format("woff2"); }
+  html, body { margin: 0; background: #e9eef3; }
+  svg { display: block; }
+</style>
+<script src="icons.js"></script>
+<script src="cards.js"></script>
+</head>
+<body>
+<svg id="frame" viewBox="0 0 1080 1350" width="1080" height="1350"></svg>
+<script>
+(async () => {
+  const q = new URLSearchParams(location.search), K = window.Cards;
+  const FONTS = [`900 98px ${K.SANS}`, `800 40px ${K.SANS}`, `500 38px ${K.SANS}`];
+  await Promise.allSettled(FONTS.map((f) => document.fonts.load(f)));
+  // The font size after shrinking is correct only if the fonts loaded rather than fell back to substitutes
+  const fontsOk = FONTS.every((f) => document.fonts.check(f));
+  const s = K.stage(document.getElementById("frame"));
+  const made = s.chrome(q.get("title") || "", { sub: q.get("sub") || undefined, series: q.get("series") || undefined, sign: q.get("sign") || undefined });
+  const end = q.get("end") ? s.conclusion(q.get("end")) : null;
+  s.render(0);
+  const size = (node) => +node.getAttribute("font-size");
+  const out = document.createElement("pre");
+  out.id = "out";
+  out.style.display = "none";
+  out.textContent = JSON.stringify({ fontsOk, title: size(made.title[0]), sub: made.sub ? size(made.sub) : null, end: end ? size(end[0]) : null });
+  document.body.appendChild(out);
+})();
+</script>
+</body>
+</html>

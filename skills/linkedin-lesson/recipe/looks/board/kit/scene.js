@@ -71,12 +71,15 @@
   // lead is the second after the step starts when its first text appears
   K.pace = (steps, start, cps) => {
     let t = start;
-    return steps.map((st) => {
+    const r = steps.map((st) => {
       const chars = st.text.reduce((a, q) => a + q.length, 0);
       const at = t;
       t += Math.max((st.lead || 0) + chars / cps, (st.motion || 1) + 0.5);
       return Object.assign({}, st, { at, end: t, chars });
     });
+    // bin/pace.mjs reads the steps from here
+    (g.LessonPace = g.LessonPace || { calls: [], conclusion: null }).calls.push(r);
+    return r;
   };
 
   // Bounce: scale 0 → 1.1 → 1 around (cx, cy); hidden before at

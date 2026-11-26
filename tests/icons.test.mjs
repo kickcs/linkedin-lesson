@@ -4,10 +4,10 @@ import { readdirSync, readFileSync } from "node:fs";
 import vm from "node:vm";
 
 const ctx = {};
-vm.runInNewContext(readFileSync(new URL("../skills/linkedin-lesson/recipe/kit/icons.js", import.meta.url), "utf8"), ctx);
+vm.runInNewContext(readFileSync(new URL("../skills/linkedin-lesson/recipe/looks/board/kit/icons.js", import.meta.url), "utf8"), ctx);
 const ICONS = ctx.ICONS;
 // every icon name the kit, the layouts and the example call
-const SRC = ["recipe/kit/scene.js", ...readdirSync(new URL("../skills/linkedin-lesson/recipe/layouts/", import.meta.url)).map((f) => "recipe/layouts/" + f), "examples/outbox/lesson.html"]
+const SRC = ["recipe/looks/board/kit/scene.js", ...readdirSync(new URL("../skills/linkedin-lesson/recipe/looks/board/layouts/", import.meta.url)).map((f) => "recipe/looks/board/layouts/" + f), "examples/outbox/lesson.html"]
   .map((f) => readFileSync(new URL("../skills/linkedin-lesson/" + f, import.meta.url), "utf8")).join("\n");
 const NEEDED = [...new Set([...SRC.matchAll(/icon\([^,]+,\s*"([a-z0-9-]+)"/g)].map((m) => m[1]))];
 const ARITY = { p: 1, r: 4, c: 3, e: 4, l: 4, pl: 1, pg: 1 };
@@ -33,7 +33,7 @@ test("every shape is of a known kind with numbers", () => {
 // rough.js cannot read glued arc flags ("0022"): every path builds without errors and without NaN
 test("paths are read by the rough.js parser", () => {
   const rc = {};
-  vm.runInNewContext(readFileSync(new URL("../skills/linkedin-lesson/recipe/kit/rough.js", import.meta.url), "utf8"), rc);
+  vm.runInNewContext(readFileSync(new URL("../skills/linkedin-lesson/recipe/looks/board/kit/rough.js", import.meta.url), "utf8"), rc);
   const gen = rc.rough.generator();
   for (const [name, shapes] of Object.entries(ICONS)) {
     for (const e of shapes.filter((s) => s[0] === "p")) {

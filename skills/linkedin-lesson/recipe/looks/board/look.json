@@ -1,0 +1,7 @@
+{
+  "name": "Board",
+  "layouts": { "actors": 12.4, "stage": 26.68 },
+  "min": { "title": 26, "sub": 12, "end": 17 },
+  "endLines": 1,
+  "theme": true
+}

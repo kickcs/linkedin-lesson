@@ -1,9 +1,10 @@
 # Theme
 
-A brand's own look for the GIF: colors, fonts and stroke roughness. It lives in
+A brand's own colors, fonts and stroke roughness for the Board look. It lives in
 `~/.media/brands/<brand>/theme.json` (`$B/theme.json`), so a skill update does not touch it. Without
-it, the GIF uses the recipe's chalkboard (`frame.md`). The geometry is not themable: zones, font
-sizes and the 1080×1350 frame stay, because the preview thresholds and `Sketch.fit` rely on them.
+it, the GIF uses the default chalkboard (`look.md`). Other looks take no theme. The geometry is not
+themable: zones, font sizes and the 1080×1350 frame stay, because the preview thresholds and
+`Sketch.fit` rely on them.
 
 ```json
 {
@@ -16,7 +17,7 @@ sizes and the 1080×1350 frame stay, because the preview thresholds and `Sketch.
 }
 ```
 
-- `colors` — keys of the palette in `frame.md` (`colors:`), each `#rrggbb`; a key left out keeps its
+- `colors` — keys of the palette in `look.md` (`colors:`), each `#rrggbb`; a key left out keeps its
   default. The ones that change the look most: `field` (background), `white` (title, subtitle,
   conclusion and board lines on the field), `chalk` (the accent line), `soft` (signature, board
   heading), `paper` (the sheet), `ink` and `sub` (text on the sheet). `dim` (empty board cells,
@@ -34,12 +35,12 @@ sizes and the 1080×1350 frame stay, because the preview thresholds and `Sketch.
 Check a theme with the key frame before any build:
 
 ```bash
-node $R/bin/preview.mjs --layout stage --title "<title>" --sub "<subtitle>" --end "<conclusion>" \
+node $R/bin/preview.mjs --look board --layout stage --title "<title>" --sub "<subtitle>" --end "<conclusion>" \
   --theme $B/theme.json --out $B/drafts/theme-frame.png
 ```
 
 An invalid file exits with 2 and names the problem. `!` lines in stderr name text colors with too
 little contrast against their background (4.5:1 for text, 3:1 for colored words on the sheet): fix
 them or show them to the user. A wider font shrinks long lines; exit 3 means a line fell below its
-threshold. The build takes the theme through `$R/bin/kit.mjs assets/kit --theme $B/theme.json`
+threshold. The build takes the theme through `$R/bin/kit.mjs assets/kit --look board --theme $B/theme.json`
 (Wiring step 1 in `frame.md`).

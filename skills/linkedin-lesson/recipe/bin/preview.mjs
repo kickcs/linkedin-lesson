@@ -1,24 +1,23 @@
 #!/usr/bin/env node
-// Key frame before the build: layout board, title, subtitle and conclusion from the card; measures whether the lines fit
+// Key frame before the build in the chosen look: layout frame, title, subtitle and conclusion from the card;
+// measures whether the lines fit
 import { parseArgs } from "node:util";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { serve } from "./serve.mjs";
 import { dumpDom, readOut, screenshot } from "./chrome.mjs";
-import { KIT, writeTheme } from "./kit.mjs";
+import { DEFAULT_LOOK, look, lookIds, writeTheme } from "./kit.mjs";
 
-// Font size below which a line is not shrunk: the title and conclusion must stay readable in the feed
-const MIN = { title: 26, sub: 12, end: 17 };
 const usage = (why) => {
-  console.error(`${why ? why + "\n" : ""}usage: preview.mjs --layout actors|stage --title "line 1|line 2 with an *accent*" [--sub "question under the title"] --end "…*accent*…" [--series 7/30] [--sign "Author name"] [--theme <brand>/theme.json] --out frame.png`);
+  console.error(`${why ? why + "\n" : ""}usage: preview.mjs [--look ${lookIds().join("|")}] [--layout <one of the look's layouts>] --title "line 1|line 2 with an *accent*" [--sub "question under the title"] --end "…*accent*…|line 2 where the look takes it" [--series 7/30] [--sign "Author name"] [--theme <brand>/theme.json] --out frame.png`);
   process.exit(2);
 };
 let a;
 try {
   ({ values: a } = parseArgs({
     options: {
-      layout: { type: "string", default: "actors" }, title: { type: "string" }, sub: { type: "string", default: "" }, end: { type: "string", default: "" },
+      look: { type: "string", default: DEFAULT_LOOK }, layout: { type: "string" }, title: { type: "string" }, sub: { type: "string", default: "" }, end: { type: "string", default: "" },
       series: { type: "string", default: "" }, sign: { type: "string", default: "" }, theme: { type: "string" }, out: { type: "string" },
     },
   }));
@@ -26,18 +25,25 @@ try {
   usage(e.message);
 }
 if (!a.title || !a.out) usage();
-if (!["actors", "stage"].includes(a.layout)) usage(`unknown layout: ${a.layout}`);
+let L;
+try { L = look(a.look); } catch (e) { usage(e.message); }
+// font size below which a line is not shrunk: the title and conclusion must stay readable in the feed
+const MIN = L.min, layouts = Object.keys(L.layouts);
+a.layout = a.layout || layouts[0];
+if (!layouts.includes(a.layout)) usage(`unknown layout of ${L.name}: ${a.layout}, known: ${layouts.join(", ")}`);
+if (a.theme && !L.theme) usage(`the ${L.name} look takes no brand theme`);
 if (a.title.split("|").length > 2) usage("title: at most two lines, break with \"|\"");
-if (a.sub && a.title.includes("|")) usage("with a subtitle the title is one line: two lines and a question do not fit above the sheet");
+if (a.end.split("|").length > L.endLines) usage(L.endLines === 1 ? `conclusion: one line in ${L.name}, no "|"` : `conclusion: at most ${L.endLines} lines in ${L.name}`);
+if (a.sub && a.title.includes("|")) usage("with a subtitle the title is one line: two lines and a question do not fit above the diagram");
 if (a.series && !/^\d+\/\d+$/.test(a.series)) usage(`series is "day/total", e.g. 7/30, got: ${a.series}`);
 // an accent is a pair of asterisks within one line
 for (const line of [...a.title.split("|"), a.end]) if ((line.split("*").length - 1) % 2) usage(`unpaired "*" in line: ${line}`);
 
 const out = resolve(a.out);
 // a theme goes into a temporary copy of the kit, as kit.mjs puts it into a project
-const kit = a.theme ? mkdtempSync(join(tmpdir(), "preview-kit-")) : KIT;
+const kit = a.theme ? mkdtempSync(join(tmpdir(), "preview-kit-")) : L.kit;
 if (a.theme) {
-  cpSync(KIT, kit, { recursive: true });
+  cpSync(L.kit, kit, { recursive: true });
   try {
     for (const w of writeTheme(kit, resolve(a.theme))) console.error("! " + w);
   } catch (e) {
@@ -51,7 +57,7 @@ try {
   const url = `${srv.url}/preview.html?${new URLSearchParams(query)}`;
   const m = readOut(await dumpDom(url));
   if (!m.fontsOk) {
-    console.error("fonts did not load: line measurements are wrong (check the recipe kit/fonts)");
+    console.error(`fonts did not load: line measurements are wrong (check looks/${L.id}/kit/fonts)`);
     process.exit(1);
   }
   // Chrome exits 0 silently on an unwritable path, so the folder is created up front and the old file removed
@@ -76,5 +82,5 @@ try {
   }
 } finally {
   srv.close();
-  if (kit !== KIT) rmSync(kit, { recursive: true, force: true });
+  if (kit !== L.kit) rmSync(kit, { recursive: true, force: true });
 }

@@ -348,6 +348,8 @@
     t.setAttribute("data-role", "conclusion");
     fit(s, t, 318);
     chalk(s, t, at == null ? null : at + (dur || 0));
+    // bin/pace.mjs reads the conclusion from here
+    if (at != null) (global.LessonPace = global.LessonPace || { calls: [], conclusion: null }).conclusion = { text: typeof v === "string" ? v : v.map((g) => g[0]).join(""), at, node: t };
     return t;
   }
 

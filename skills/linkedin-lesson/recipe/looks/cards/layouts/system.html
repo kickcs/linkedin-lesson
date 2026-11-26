@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Overpass"; font-weight: 100 900; src: url("assets/kit/fonts/overpass.woff2") format("woff2"); }
+        @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+        #lesson-root { position: absolute; inset: 0; overflow: hidden; background: #e9eef3; }
+        #lesson-root svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+      </style>
+      <div id="lesson-root" data-composition-id="lesson" data-width="1080" data-height="1350">
+        <svg class="lesson" viewBox="0 0 1080 1350" width="100%" height="100%" data-layout-allow-overflow="" data-layout-ignore=""></svg>
+      </div>
+      <script>
+        (() => {
+          // "System" layout in the cards look: the parts stand from frame 0 as white cards in their idle state, each step
+          // changes a card's state and puts a chip on a link; one caption at a time in the band under the cards.
+          // The example lesson is how a cache-aside read works; the build replaces texts, parts and steps with the card;
+          // the zones, the pace and the timeline tail stay.
+          const K = window.Cards;
+          const T = {
+            title: "Cache aside", sub: "Where a read goes first", sign: "Your Name",
+            anna: "Anna", annaNote: "opens her profile", svc: "Profile service", steps: "Service steps",
+            cache: "Cache", db: "Database", dbNote: "keeps every row", dbRow: "user 42: Anna",
+            get: "GET /profile", ok: "200 profile", sel: "SELECT user 42", row: "1 row", miss: "miss", key: "user:42",
+            code: ["GET cache", "SELECT db", "SET cache"],
+            a1: ["Anna opens her profile: her phone", "sends GET /profile."],
+            a2: ["The service asks the cache first.", "It has no copy of Anna: a miss."],
+            a3: ["It reads her row from the database", "and keeps a copy in the cache."],
+            a4: ["Anna gets her profile. The next read", "comes from the cache."],
+            end: "Read the cache first.",
+          };
+          // what the viewer reads in each step; text that stays on screen is counted once
+          const P = K.step;
+          const steps = K.pace([
+            P([T.anna, T.svc, T.steps, T.cache, T.db, ...T.code], 0.5, 0.1),
+            P([...T.a1, T.get], 1.4, 0.1),
+            P([...T.a2, T.miss], 1.4, 0.1),
+            P([...T.a3, T.sel, T.row, T.key], 2.8, 0.1),
+            P([...T.a4, T.ok], 1.2, 0.1),
+          ], 0.2, 16.5);
+          const [, a1, a2, a3, a4] = steps;
+          // the conclusion comes when the last step ends; DUR goes into data-duration of index.html
+          const { END, FADE, DUR } = K.timing(steps[steps.length - 1].end, T.end);
+
+          const root = document.querySelector('[data-composition-id="lesson"]');
+          const s = K.stage(root.querySelector("svg.lesson"), { fade: FADE });
+          const C = s.C, { g, rr, tx, solid, outline, showW, enter, packet } = s;
+          s.chrome(T.title, { sub: T.sub, series: "7/30", sign: T.sign });
+          const { cards: CARDS } = s.layers;
+
+          // LINKS lie under the cards: Anna → service, service → database
+          const AX = 116.5, KX = 250;
+          s.link(AX, 416, AX, 448, C.violet); s.head(AX, 464, C.violet);
+          s.link(KX, 806, KX, 862, C.violet);
+
+          // ANNA: a phone whose screen loads at the end
+          const AN = s.phone(64, 240, 1.25, CARDS);
+          solid(rr(12, 16, 34, 8, 4), C.ink, AN);
+          for (const yy of [32, 52, 72]) solid(rr(12, yy, 60, 14, 7), C.mute, AN);
+          const loaded = showW(g(AN), [[a4.at + 0.5]]);
+          for (const yy of [32, 52, 72]) solid(rr(12, yy, 60, 14, 7), C.teal, loaded);
+          tx(192, 292, T.anna, { size: 40, w: 800 }, CARDS);
+          tx(192, 328, T.annaNote, { fill: C.note }, CARDS);
+
+          // SERVICE: its steps on the left, its cache on the right
+          s.card(40, 470, 1000, 336, 50);
+          s.server(80, 494, 1.1, CARDS);
+          tx(142, 528, T.svc, { size: 36, w: 800 }, CARDS);
+          const panel = s.steps(80, 576, 404, T.steps), RY = [616, 672, 728];
+          T.code.forEach((str, k) => panel.row(str, RY[k]));
+          s.add("line", { x1: 510, y1: 562, x2: 510, y2: 784, stroke: C.mute, "stroke-width": 4, "stroke-linecap": "round" }, CARDS);
+          tx(544, 576, T.cache, { size: 30, w: 800 }, CARDS);
+          s.tag(544, 632, "user:7", C.field, C.ink, CARDS);
+          s.tag(544, 688, "user:19", C.field, C.ink, CARDS);
+          outline(rr(544, 725, T.key.length * 14.4 + 30, 38, 19), null, { stroke: C.mute, sw: 4, dash: "8 10" }, CARDS);
+
+          // DATABASE: Anna's row stands in it from frame 0
+          s.card(40, 862, 1000, 170, 46);
+          s.db(72, 898, 1, CARDS);
+          tx(186, 926, T.db, { size: 36, w: 800 }, CARDS);
+          tx(186, 964, T.dbNote, { size: 27, fill: C.note }, CARDS);
+          s.tag(600, 947, T.dbRow, C.field, C.ink, CARDS);
+
+          // ① ANNA ASKS: one action per caption
+          let a = a1.at;
+          s.say(T.a1, a + 0.1, a2.at);
+          s.tap(AX, 329, C.violet, a + 0.6);
+          s.chip(192 + s.chipW(T.get) / 2, 376, T.get, { color: C.violet }, a + 0.7, a4.at + 0.3, 0);
+          packet(AX, 420, AX, 450, C.violet, a + 0.8, 0.45);
+
+          // ② THE CACHE: a miss next to the empty slot
+          a = a2.at;
+          s.say(T.a2, a + 0.1, a3.at);
+          panel.hl(RY[0], a + 0.4, a3.at + 0.2);
+          enter(732, 744, a + 0.9, a3.at + 0.2, (q) => s.pill(690, 744, T.miss, C.lorange, C.orangeInk, q));
+
+          // ③ THE DATABASE: the request, the row outlined, the reply, the copy in the cache
+          a = a3.at;
+          s.say(T.a3, a + 0.1, a4.at);
+          panel.done(RY[0], a + 0.2);
+          panel.hl(RY[1], a + 0.2, a + 1.8);
+          s.chip(KX, 862, T.sel, { color: C.violet }, a + 0.4, a + 1.4, 0);
+          s.ring(586, 920, 245, 54, C.violet, a + 1.0, a + 2.2);
+          s.chip(KX, 862, T.row, { reply: true }, a + 1.4, a + 2.4);
+          panel.done(RY[1], a + 1.8);
+          panel.hl(RY[2], a + 1.8, a + 2.6);
+          enter(600, 744, a + 2.2, undefined, (q) => s.tag(544, 744, T.key, C.lteal, C.tealInk, q));
+          panel.done(RY[2], a + 2.6);
+
+          // ④ ANNA GETS HER PROFILE
+          a = a4.at;
+          s.say(T.a4, a + 0.1, END);
+          packet(AX, 450, AX, 420, C.teal, a + 0.2, 0.35);
+          s.chip(192 + s.chipW(T.ok) / 2, 376, T.ok, { reply: true }, a + 0.5);
+
+          // the conclusion takes the caption band and stays until the fade; what the lesson added leaves with it
+          s.conclusion(T.end, END);
+
+          const tl = gsap.timeline({ paused: true });
+          const clock = { t: 0 };
+          tl.to(clock, { t: DUR, duration: DUR, ease: "none", onUpdate: () => s.render(clock.t) }, 0);
+          s.render(0);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["lesson"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

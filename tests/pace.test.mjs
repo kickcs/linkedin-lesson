@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { dataDurations, verdict } from "../skills/linkedin-lesson/recipe/bin/pace.mjs";
-import { installKit } from "../skills/linkedin-lesson/recipe/bin/kit.mjs";
+import { installKit, look } from "../skills/linkedin-lesson/recipe/bin/kit.mjs";
 
 const recipe = fileURLToPath(new URL("../skills/linkedin-lesson/recipe/", import.meta.url));
 const steps = [{ at: 0.2, end: 5, chars: 60, label: "Anna" }, { at: 5, end: 9.5, chars: 70, label: "Ben" }];
@@ -34,16 +34,16 @@ test("a composition that threw is an error and data-duration is compared with th
   assert.match(v.errors[0], /threw: DUR = FADE \+ 0\.7 = 13\.20/);
   assert.match(v.errors.join(), /#lesson is 12\.4, DUR is 13\.20/);
 });
-test("data-duration is read from #root and #lesson", () => assert.deepEqual(dataDurations(readFileSync(join(recipe, "layouts/index.html"), "utf8")), { root: 12.4, lesson: 12.4 }));
+test("data-duration is read from #root and #lesson", () => assert.deepEqual(dataDurations(readFileSync(join(recipe, "looks/board/layouts/index.html"), "utf8")), { root: 12.4, lesson: 12.4 }));
 
 // the real tool on the skeletons, mounted from a bare project as the skill builds one
 const run = (dir) => new Promise((ok) => execFile(process.execPath, [join(recipe, "bin/pace.mjs"), dir], (err, stdout, stderr) => ok({ code: err ? err.code : 0, stdout, stderr })));
-function project(layout, dur, edit = (s) => s) {
+function project(layout, dur, edit = (s) => s, lookId = "board", src = join(recipe, `looks/${lookId}/layouts/${layout}.html`)) {
   const dir = mkdtempSync(join(tmpdir(), `pace-${layout}-`));
-  installKit(join(dir, "assets/kit"));
+  installKit(join(dir, "assets/kit"), null, lookId);
   mkdirSync(join(dir, "compositions"));
-  writeFileSync(join(dir, "index.html"), readFileSync(join(recipe, "layouts/index.html"), "utf8").replaceAll('data-duration="12.4"', `data-duration="${dur}"`));
-  writeFileSync(join(dir, "compositions/lesson.html"), edit(readFileSync(join(recipe, `layouts/${layout}.html`), "utf8")));
+  writeFileSync(join(dir, "index.html"), readFileSync(join(recipe, `looks/${lookId}/layouts/index.html`), "utf8").replaceAll('data-duration="12.4"', `data-duration="${dur}"`));
+  writeFileSync(join(dir, "compositions/lesson.html"), edit(readFileSync(src, "utf8")));
   return dir;
 }
 
@@ -66,7 +66,25 @@ test("a wrong DUR in the composition: exit 1 with its own error", async () => {
 test("actors skeleton: hand-set times, exit 0", async () => {
   const r = await run(project("actors", 12.4));
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /no Scene\.pace call/);
+  assert.match(r.stdout, /no pace call/);
   assert.match(r.stdout, /DUR 12\.40/);
+});
+test("cards system skeleton: five steps, DUR from look.json, exit 0", async () => {
+  const dur = look("cards").layouts.system;
+  const r = await run(project("system", dur, undefined, "cards"));
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, new RegExp(`DUR ${dur.toFixed(2).replace(".", "\\.")}`));
+  assert.equal(r.stdout.split("\n").filter((l) => /→/.test(l)).length, 5);
+});
+test("cards pool example: DUR 100.99, exit 0", async () => {
+  const src = fileURLToPath(new URL("../skills/linkedin-lesson/examples/pool/lesson.html", import.meta.url));
+  const r = await run(project("pool", 100.99, undefined, "cards", src));
+  assert.equal(r.code, 0, r.stderr);
+  assert.match(r.stdout, /DUR 100\.99/);
+});
+test("a cards lesson that fades a second early: exit 1, the conclusion is not read", async () => {
+  const r = await run(project("system", 25.61, (s) => s.replace('{ fade: FADE }', "{ fade: FADE - 1 }"), "cards"));
+  assert.equal(r.code, 1);
+  assert.match(r.stderr, /holds [\d.]+ s, it needs [\d.]+/);
 });
 test("a folder without a lesson: exit 2", async () => assert.equal((await run(mkdtempSync(join(tmpdir(), "pace-empty-")))).code, 2));

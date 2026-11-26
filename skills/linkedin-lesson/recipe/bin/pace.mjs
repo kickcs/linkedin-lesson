@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Reading pace of a built lesson: when each step starts, FADE, DUR and the times the build needs,
+// Reading pace of a built lesson in any look: when each step starts, FADE, DUR and the times the build needs,
 // checked against the lesson's timeline and the data-duration in index.html
 import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
@@ -27,12 +27,12 @@ export function verdict(m, dd) {
   const lines = [], errors = [];
   if (m.error) errors.push(`the composition threw: ${m.error}`);
   m.calls.forEach((steps, k) => {
-    if (m.calls.length > 1) lines.push(`Scene.pace call ${k + 1}`);
+    if (m.calls.length > 1) lines.push(`pace call ${k + 1}`);
     steps.forEach((st, i) => lines.push(`${String(i).padStart(2)}  ${f(st.at).padStart(6)} → ${f(st.end).padStart(6)}  ${String(st.chars).padStart(3)} ch  ${st.label.slice(0, 44)}`));
   });
-  if (!m.calls.length) lines.push("no Scene.pace call: the step times are set by hand");
+  if (!m.calls.length) lines.push("no pace call: the step times are set by hand");
   if (!m.conclusion) {
-    errors.push("no Sketch.conclusion call");
+    errors.push("no conclusion: the lesson does not call the look's conclusion with its second");
     return { lines, errors };
   }
   const chars = m.conclusion.text.replace(/\*/g, "").length, hold = chars / CPS + 1;
@@ -41,7 +41,7 @@ export function verdict(m, dd) {
 
   if (m.dur == null) {
     if (!m.error) errors.push('no timeline: window.__timelines["lesson"] is not registered');
-  } else if (m.fade == null) errors.push("the lesson layer does not fade out by the end of the timeline");
+  } else if (m.fade == null) errors.push("the conclusion does not fade out by the end of the timeline");
   else {
     if (m.fade < paceFade - 0.1) errors.push(`the lesson fades at ${f(m.fade)}: the conclusion holds ${f(m.fade - m.conclusion.at)} s, it needs ${f(hold)} (FADE ${f(paceFade)})`);
     if (Math.abs(m.dur - (m.fade + TAIL)) > TOL) errors.push(`the timeline is ${f(m.dur)} s, DUR = FADE + 0.7 = ${f(m.fade + TAIL)}`);
@@ -61,7 +61,7 @@ export function verdict(m, dd) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) {
   const dir = resolve(process.argv[2] || ".");
-  const missing = ["index.html", "compositions/lesson.html", "assets/kit/scene.js"].filter((p) => !existsSync(join(dir, p)));
+  const missing = ["index.html", "compositions/lesson.html"].filter((p) => !existsSync(join(dir, p)));
   if (missing.length) {
     console.error(`usage: pace.mjs [lesson project folder]\nmissing in ${dir}: ${missing.join(", ")}`);
     process.exit(2);

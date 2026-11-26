@@ -96,3 +96,31 @@ test("unknown flag and unpaired asterisk: usage hint and exit 2", () => {
   assert.equal(star.status, 2, star.stderr);
   assert.match(star.stderr, /\*/);
 });
+
+// the cards look: its own sizes and thresholds from look.json, a two-line conclusion, no theme
+test("preview --look cards: the system layout by default, sizes against the cards minimums", () => {
+  const out = join(tmp, "cards.png");
+  const r = run("--look", "cards", "--title", "Short *transactions*", "--sub", "Why the pool runs dry", "--end", "Wait outside|the transaction.", "--series", "7/30", "--sign", "Ann Author", "--out", out);
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.stdout, /title 98 \(min 70\), sub 38 \(min 30\), end 76 \(min 60\), series 7\/30/);
+  assert.ok(statSync(out).size > 10000, "screenshot is not empty");
+});
+test("preview --look cards: a long title is exit 3, three conclusion lines and a theme are exit 2", () => {
+  const long = run("--look", "cards", "--title", "Why every short transaction keeps the connection pool free", "--out", join(tmp, "cards-long.png"));
+  assert.equal(long.status, 3, long.stderr);
+  assert.match(long.stderr, /title/);
+  const three = run("--look", "cards", "--title", "Short", "--end", "a|b|c", "--out", join(tmp, "x.png"));
+  assert.equal(three.status, 2);
+  assert.match(three.stderr, /at most 2 lines in Cards/);
+  const theme = run("--look", "cards", "--title", "Short", "--theme", "theme.json", "--out", join(tmp, "x.png"));
+  assert.equal(theme.status, 2);
+  assert.match(theme.stderr, /Cards look takes no brand theme/);
+});
+test("a \"|\" in a Board conclusion and an unknown look: exit 2", () => {
+  const end = run("--title", "Short", "--end", "Wait outside|the transaction.", "--out", join(tmp, "x.png"));
+  assert.equal(end.status, 2);
+  assert.match(end.stderr, /one line in Board/);
+  const unknown = run("--look", "grid", "--title", "Short", "--out", join(tmp, "x.png"));
+  assert.equal(unknown.status, 2);
+  assert.match(unknown.stderr, /unknown look "grid"/);
+});

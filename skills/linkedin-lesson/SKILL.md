@@ -21,14 +21,17 @@ The viewer is the mixed LinkedIn feed: an engineer and a person who does not kno
 of them understands the lesson's key points, while the real parts of the system and the terms stay in
 the frame and are explained in plain words.
 
-The user has three checkpoints: the topic (step 2, if they did not bring an idea), the story (step 3)
-and the lesson card with the hook choice (step 6). The exception is the first run: step 1 asks for
-the brand name and whatever is missing from the profile. Do everything else yourself.
+The user has four checkpoints: the topic (step 2, if they did not bring an idea), the story (step 3),
+the look of the GIF (step 4) and the lesson card with the hook choice (step 7). The exception is the
+first run: step 1 asks for the brand name and whatever is missing from the profile. Do everything
+else yourself.
 
 Paths:
 
 - `$S` — this skill's folder (where this `SKILL.md` lives);
-- `$R` — the recipe `$S/recipe/`: engine, skeletons, checks in `bin/`, the GIF look in `frame.md`;
+- `$R` — the recipe `$S/recipe/`: checks in `bin/`, the GIF contract in `frame.md`, the looks in
+  `looks.md`;
+- `$L` — the look chosen at step 4, `$R/looks/<look>/`: its `look.md`, engine kit and skeletons;
 - `$B` — the brand `~/.media/brands/<brand>/`;
 - `$P` — posts: `posts/` in the current folder, unless the user named another one.
 
@@ -38,7 +41,7 @@ Brand files in `$B`:
 
 - `brand-profile.md` — who, for whom, how it sounds, what it does not say;
 - `voice.md` — the voice taken from real texts;
-- `linkedin.md` — the log: date, folder, idea, layout, hook, accepted or rejected, reach;
+- `linkedin.md` — the log: date, folder, idea, look and layout, hook, accepted or rejected, reach;
 - `ideas.md` — the idea bank.
 
 If the folder exists, load the files and summarize the profile and the voice in two lines. If there
@@ -53,10 +56,11 @@ the reader), only verified numbers. Under Operational defaults, next to Visual i
 `- **Frame signature:** <name>`, the name signed at the bottom of every GIF; ask for it, and leave the
 line out if the user wants none. Create `linkedin.md` with the table header and an empty `ideas.md`.
 
-The look of the GIF is the recipe's chalkboard by default. If the user wants their own colors, fonts
-or a cleaner stroke, now or at any later lesson, write `$B/theme.json` following `$R/theme.md` (the
-profile's Visual identity is a starting point), take a key frame with it (the step 6 command) and
-show it before going on.
+The look of the GIF is chosen per lesson at step 4. A brand theme applies to the Board look: if the
+user wants their own colors, fonts or a cleaner stroke there, now or at any later lesson, write
+`$B/theme.json` following `$R/looks/board/theme.md` (the profile's Visual identity is a starting
+point), take a key frame with it (the step 7 command with `--look board`) and show it before going
+on.
 
 Build `$B/voice.md` with `voice-builder` once there are three or more texts that the user wrote or
 edited themselves. Until then, the Voice section of the profile sets the voice.
@@ -113,7 +117,7 @@ Decide six things:
   before the failure's outcome (“How much does Anna get?”); in “how it works”, before the result of
   the last part; in “how they differ”, before the result of the second side. The viewer guesses
   first, then sees the answer.
-- **Analogy** and **transfer** — for the story and, if needed, for the post text (step 5); the GIF
+- **Analogy** and **transfer** — for the story and, if needed, for the post text (step 6); the GIF
   has neither:
   - the analogy: three candidates from different areas (things, relationships between people,
     everyday tasks), each with a note on where it breaks. The analogy leads to the real parts and
@@ -134,17 +138,36 @@ Show the user the text, without frames:
 Ask two things: whether the story makes it clear why the technique is needed, and whether the steps
 after are how the user would fix it. If the story is unclear, rewrite it: change the scenario or the
 flow, not the wording. If the user would fix it another way, their steps become the mechanism, and
-the prototype at step 4 runs them.
+the prototype at step 5 runs them.
 
 Done when the user has said they understood why the technique is needed, has confirmed the mechanism
 (in “why”, the steps after or one of the candidates) and has picked an analogy or declined one.
 
-## Step 4. Lesson card
+## Step 4. Look — checkpoint
+
+The look is how the GIF is drawn: palette, fonts, the zones of the frame and the engine. The story
+does not change with it. Show the user the looks from `$R/looks.md`, in its order: for each, the
+name, its line and its sample frame as an image the user can see. Recommend one for this lesson in a
+sentence, from the lines in `looks.md` and the story; without a reason to prefer another, the first
+one, Board. Ask which one to use.
+
+The choice holds for this lesson only: ask again in the next one. If the user already named a look
+for this lesson, take it and do not ask. Ask in a message of its own, after the story is confirmed:
+a choice asked together with the story gets one quick yes.
+
+Then read `$L/look.md`: the card's frame sections and the build follow it. The brand theme
+(`$B/theme.json`) applies only to a look whose `look.json` has `"theme": true`; with another look,
+say in one line that the theme is not used in this GIF.
+
+Done when the user has picked a look.
+
+## Step 5. Lesson card
 
 Fill in `$B/drafts/<slug>-LESSON.md` following `$S/references/lesson-card.md`: the story sections
 carry over as they are, the rest you write. The slug is 2–4 words in Latin letters, joined by
-hyphens. The GIF look (field, fonts, palette, layout zones) is set by `$R/frame.md`; the card refers
-to it and does not restate it.
+hyphens. The GIF contract (frame, pace, loop) is set by `$R/frame.md`, the look (field, fonts,
+palette, layouts and zones) by `$L/look.md`; the card names the look and the layout, refers to them
+and does not restate them.
 
 Facts:
 
@@ -167,7 +190,7 @@ Facts:
 Done when all card sections are filled in, every fact has a source and the card's “Pre-approval
 check” section is passed.
 
-## Step 5. Post text
+## Step 6. Post text
 
 The post is a practitioner's account in three paragraphs, up to 700 characters including hashtags.
 The model is `$S/examples/outbox/post.txt` (the lesson's final frame `frame.png` and composition
@@ -216,34 +239,36 @@ Do not show the user a text with `postcheck` errors: fix it and check again.
 
 Done when the check passes without errors.
 
-## Step 6. Approval — checkpoint
+## Step 7. Approval — checkpoint
 
-Take the key frame:
+Take the key frame in the chosen look:
 
 ```bash
-node $R/bin/preview.mjs --layout <stage|actors> --title "<title>" --sub "<subtitle>" \
-  --end "<conclusion with an *accent*>" [--series <day>/<total>] [--sign "<signature from the profile>"] \
+node $R/bin/preview.mjs --look <look> --layout <layout from the card> --title "<title>" --sub "<subtitle>" \
+  --end "<conclusion>" [--series <day>/<total>] [--sign "<signature from the profile>"] \
   [--theme $B/theme.json] --out $B/drafts/<slug>-frame.png
 ```
 
-A “why” lesson on the tall sheet takes `--layout actors`. With a theme, `!` lines in stderr name text
-colors with too little contrast: show them to the user along with the frame.
+`--theme` goes only with a look that takes one. In Board, a “why” lesson on the tall sheet takes
+`--layout actors`. With a theme, `!` lines in stderr name text colors with too little contrast: show
+them to the user along with the frame.
 
-The preview prints the final font sizes: `title 35 (min 26), sub 15 (min 12), end 21 (min 17)`.
-Exit code 3 — a line shrank below its threshold, and stderr names it: shorten it. Code 2 — bad
-arguments: a two-line title together with a subtitle, three title lines, or a series not in the form
-“day/total”. Code 1 — the PNG was not written or the fonts did not load; if the message says
+The preview prints the final font sizes and the look's minimum for each, for Board:
+`title 35 (min 26), sub 15 (min 12), end 21 (min 17)`. Exit code 3 — a line shrank below its
+threshold, and stderr names it: shorten it. Code 2 — bad arguments: an unknown look or layout, a
+theme for a look that takes none, a two-line title together with a subtitle, three title lines, or a
+series not in the form “day/total”. Code 1 — the PNG was not written or the fonts did not load; if the message says
 “Chrome not found”, set `CHROME=/path/to/chrome`. If the frame could not be taken, show the card
 without the frame and say so.
 
 Show the user the card, the hook variants, the post text and the frame. Put edits into the card; do
 not write the composition. Put the chosen hook into `post.txt` and check it with `postcheck`; if
-none of the hooks suited the user, go through step 5 again and ask what is wrong: too dry, too
+none of the hooks suited the user, go through step 6 again and ask what is wrong: too dry, too
 technical or not gripping.
 
 Done when the user has approved the card and chosen a hook.
 
-## Step 7. Build
+## Step 8. Build
 
 The build starts after the card is approved. First `mkdir -p $P/<YYYY-MM-DD>-<slug>/ && cd
 $P/<YYYY-MM-DD>-<slug>/`. The whole step runs from the project root: `mkdir`/`cp` from Wiring, the
@@ -252,16 +277,16 @@ ladder's `perl -pi` edits, `check`, `snapshot`, `render`.
 Call `hyperframes` and hand it the card as a finished plan. In the request:
 
 - the first line is “just build it, don't ask”: without it hyperframes asks its own questions and
-  runs a second sketch review on top of step 6;
+  runs a second sketch review on top of step 7;
 - the recipe is `$R`, the skill is `hyperframes`, the project is the current folder;
 - the card is the plan: its key points and events become one scene in `compositions/lesson.html`;
-- the title, subtitle, series and signature from the card go into
-  `chrome.<layout>(s, "<title>", { sub: "<subtitle>", series: "<day>/<total>", sign: "<signature>" })`,
-  the conclusion into `Sketch.conclusion(s, "<conclusion with an *accent*>", at, dur)`;
+- the look is `$L`: the title, subtitle, series, signature and conclusion from the card go where
+  the Building section of `$L/look.md` says;
 - build following the Wiring section of `$R/frame.md`: the kit goes into `assets/kit`
-  (`$R/bin/kit.mjs` copies the kit, adds GSAP from npm and, with `--theme $B/theme.json`, the brand
-  theme), `index.html` and the layout skeleton from `$R/layouts/`, `data-duration` in `index.html`
-  equals the layout's DUR (Wiring step 2), no CDN; DUR = FADE + 0.7 from the card's events;
+  (`$R/bin/kit.mjs assets/kit --look <look>` copies the look's kit, adds GSAP from npm and, for a
+  look that takes one, the brand theme with `--theme $B/theme.json`), `index.html` and the layout
+  skeleton from `$L/layouts/`, `data-duration` in `index.html` equals the lesson's DUR (Wiring
+  step 2), no CDN; DUR = FADE + 0.7 from the card's events;
 - the project is built bare: do not run `hyperframes init` or `skills update`, they update and clean
   the agent's global skills and write `AGENTS.md` and `CLAUDE.md` into the project; if the
   `hyperframes` skill insists on `init`, run it only with `HYPERFRAMES_SKIP_SKILLS=1`; do not save
@@ -275,23 +300,22 @@ Call `hyperframes` and hand it the card as a finished plan. In the request:
   nothing; otherwise the reading pauses do not fit into LinkedIn's 500 frames.
 
 `hyperframes` is a skill in the same session, not a separate executor: you build the project and edit
-`compositions/lesson.html` yourself. Everything in the frame is drawn by the recipe's engine: Lucide
-icons, rough.js strokes, the fonts and palette from `frame.md`; stock, game and generated images, and
+`compositions/lesson.html` yourself. Everything in the frame is drawn by the look's engine: its
+drawings, Lucide icons, fonts and palette from `$L/look.md`; stock, game and generated images, and
 your own frames made with Pillow or ffmpeg, do not go into the GIF. After editing, the file holds no
-skeleton text or numbers that are not in the card: check by searching the file. In `stage`, set
-`DUR` = FADE + 0.7 and the same number in `data-duration` of `index.html`: a skeleton with a
-different DUR fails with an error that names the required number. After every change to the events,
-run `node $R/bin/pace.mjs` from the project root: it prints when each step starts, FADE and DUR, the
+skeleton text or numbers that are not in the card: check by searching the file. Set the same DUR in
+`data-duration` of `index.html`; Board's `stage` also keeps it in `DUR` in the composition and fails
+with an error that names the required number. After every change to the events, run
+`node $R/bin/pace.mjs` from the project root: it prints when each step starts, FADE and DUR, the
 `snapshot --at` list, the seam time and the `frame.png` filter below, and exits 1 naming what
 disagrees: the composition's DUR, the timeline, `data-duration` in `index.html`, or a conclusion that
 fades before it is read. Take every time in this step from its output. Do not hard-code widths as
-numbers: wrap a line that may not fit in `Sketch.fit`; use `Scene.under` for an underline,
-`Scene.seal` for a stamp, `Scene.cells` for board cells.
+numbers: use the look's `fit` and helpers (`$L/look.md`, Building).
 
 `check` on 0.9.19 gives expected warnings: `dead_stretch` (the motion runs as one clock tween
 inside the SVG, and the check cannot see it), `film_silent` (the GIF has no sound) and, once
 `compositions/lesson.html` is over 300 lines, `composition_file_too_large`: the lesson is one SVG on
-one clock, so it stays one file. The error
+one clock, so it stays one file. In Board, the error
 `non_deterministic_code` on `Math.random` means `assets/kit` has the wrong rough.js: run
 `$R/bin/kit.mjs` again.
 
@@ -340,7 +364,7 @@ Otherwise something is left on screen at the loop point. `snapshot` adds the tim
 itself; do not compare it.
 
 The project's `frame.png` is the full final state of the GIF (all events and the conclusion), not the
-empty preview frame from step 6. After the last render, take it from the GIF: the last frame no later
+empty preview frame from step 7. After the last render, take it from the GIF: the last frame no later
 than `FADE − 0.3` (`pace.mjs` prints the filter with the number). `-ss` does not work: after
 `gifpack` the pause before the fade is one long frame, and `-ss` lands on the first frame of the fade.
 
@@ -348,7 +372,7 @@ than `FADE − 0.3` (`pace.mjs` prints the filter with the number). `-ss` does n
 ffmpeg -loglevel error -y -i renders/<slug>.gif -vf "select='lte(t,<FADE−0.3>)'" -fps_mode passthrough -update 1 frame.png
 ```
 
-The step 6 preview (`$B/drafts/<slug>-frame.png`) does not go into the project; it leaves `drafts/`
+The step 7 preview (`$B/drafts/<slug>-frame.png`) does not go into the project; it leaves `drafts/`
 with the rest. Open `frame.png` and look: the title, subtitle, all events and the conclusion are in
 place.
 
@@ -369,7 +393,7 @@ Done when `pace.mjs` and gifcheck pass without errors, frame 0 has the title and
 matched byte for byte, the numbers are verified, and `frame.png` is taken from the GIF and read at
 400 px.
 
-## Step 8. Delivery
+## Step 9. Delivery
 
 Reply to the user with:
 
@@ -380,9 +404,9 @@ Reply to the user with:
 - what to look at after publishing, from the card's “After publishing” section.
 
 State the “photo” point as a fact, without “it should animate” or “check the preview”. MP4 is not a
-workaround for a frozen GIF but the last move of the step 7 budget; a delivered MP4 is uploaded as a
+workaround for a frozen GIF but the last move of the step 8 budget; a delivered MP4 is uploaded as a
 video.
 
-Append a line to `$B/linkedin.md`.
+Append a line to `$B/linkedin.md`, with the look and the layout.
 
 Done when the line is in the log.

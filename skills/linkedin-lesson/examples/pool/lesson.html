@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+  </head>
+  <body>
+    <template>
+      <style>
+        @font-face { font-family: "Overpass"; font-weight: 100 900; src: url("assets/kit/fonts/overpass.woff2") format("woff2"); }
+        @font-face { font-family: "JetBrains Mono"; font-weight: 400; src: url("assets/kit/fonts/jetbrains-mono-400.woff2") format("woff2"); }
+        #lesson-root { position: absolute; inset: 0; overflow: hidden; background: #e9eef3; }
+        #lesson-root svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+      </style>
+      <div id="lesson-root" data-composition-id="lesson" data-width="1080" data-height="1350">
+        <svg class="lesson" viewBox="0 0 1080 1350" width="100%" height="100%" data-layout-allow-overflow="" data-layout-ignore=""></svg>
+      </div>
+      <script>
+        (() => {
+          // A "why" lesson in the cards look: the whole system stands from frame 0 as cards in their idle state; each step
+          // changes the state of a card (step row, pool slot, bank, database row, phone) and puts a chip on a link.
+          const K = window.Cards;
+          const T = {
+            title: "Short transactions", sub: "Why a slow bank slows every request", sign: "Your Name",
+            anna: "Anna", annaNote: "pays $100", ten: "ten people pay", ben: "Ben", benNote: "opens his history",
+            svc: "Payments service", steps: "Service steps", before: "before", after: "after",
+            pool: "Connection pool", bank: "Bank", bankNote: "2 s per answer", db: "Database", dbNote: "stores payments", idle: ["idle: no query", "can start"],
+            post: "POST /pay", get: "GET /balance", bal: "200 balance 340", ok: "201 approved", hist: "GET /history", hres: "200 12 payments",
+            code: ["BEGIN", "GET /balance", "INSERT", "COMMIT"], code2: ["INSERT pending", "GET /balance", "UPDATE approved"],
+            row: "Anna $100", st: "status: ", appr: "approved", pend: "pending", two: "2 s", x10: "×10",
+            held: "connection taken", held2: "connection taken: 2 s", held8: "connection taken: 8 ms",
+            a1: ["Anna taps Pay: her phone sends", "POST /pay with $100."],
+            a2: ["The service opens a transaction", "and takes a connection from the pool."],
+            a3: ["It asks the bank for Anna's balance.", "The bank takes 2 s. The connection waits."],
+            a4: ["The bank answers: 340 on the card.", "The service saves the payment."],
+            a5: ["Anna gets 201 approved. Her connection", "was taken the whole 2 s."],
+            b1: ["Now ten people pay at once."],
+            b2: ["All 10 connections wait for the bank.", "The pool is full."],
+            b3: ["Ben only opens his payment history.", "His query needs a connection too."],
+            ask: "How long does Ben wait?",
+            b4: ["Ben waited 1.9 s for a 2 ms query.", "A slow bank slows every request,", "not only payments."],
+            q: "query: 2 ms",
+            fixH: "The fix: short transactions",
+            fix: ["Save the payment as pending first.", "Ask the bank with no connection taken.", "Then mark the payment approved."],
+            c2: ["Ten people pay again. Each payment is saved", "as pending, and the connection goes back."],
+            c2b: ["The service asks the bank with no", "connection taken. The pool stays free."],
+            c3: ["Ben opens his history. A connection", "is free: he gets it in 6 ms."],
+            c4: ["The bank answers: the payment is approved.", "In total, the connection was taken 8 ms."],
+            board: "What short transactions give",
+            L: ["Ben waits 6 ms, not 1.9 s.", "A slow bank slows only payments.", "A connection is busy 8 ms, not 2 s."],
+            end: "Wait outside|the transaction.",
+          };
+          // what the viewer reads in each step; a chip or label repeated on a later scene is counted once
+          const P = K.step;
+          const steps = K.pace([
+            P([T.anna, T.ben, T.svc, T.pool, T.db, T.bank, T.steps, T.before], 0.5, 0.1),
+            P([...T.a1], 1.8, 0.1),
+            P([...T.a2, T.held], 1.6, 0.1),
+            P([...T.a3, T.get, T.two], 2.0, 0.1),
+            P([...T.a4, T.bal, T.row, T.st + T.appr], 2.6, 0.1),
+            P([...T.a5, T.ok, ": 2 s"], 1.4, 0.1),
+            P([...T.b1, T.x10, T.ten], 3.6, 0.1),
+            P([...T.b2, "10 of 10 taken"], 1.8, 0.1),
+            P([...T.b3, T.hist, ...T.idle], 1.6, 0.1),
+            P([T.ask], 0.3, 1.5),
+            P([...T.b4, T.q, T.hres], 3.4, 3.4),
+            P([T.fixH, T.after], 1.6, 0.2),
+            P([T.fix[0], T.code2[0], T.held], 1.4, 0.1),
+            P([T.fix[1], T.code2[1]], 1.0, 0.1),
+            P([T.fix[2], T.code2[2]], 1.2, 0.1),
+            P([...T.c2, T.pend], 3.6, 0.1),
+            P([...T.c2b], 2.0, 0.1),
+            P([...T.c3], 1.8, 0.1),
+            P([...T.c4, ": 8 ms"], 2.6, 0.1),
+            P([T.board, T.L[0]], 1.0, 0.1),
+            P([T.L[1]], 1.0, 0.6),
+            P([T.L[2]], 1.0, 0.6),
+          ], 0.2, 16.5);
+          const [s0, a1, a2, a3, a4, a5, b1, b2, b3, bq, b4, fx0, fx1, fx2, fx3, c2, c2b, c3, c4, r1, r2, r3] = steps;
+          // the conclusion comes when the last step ends; DUR goes into data-duration of index.html
+          const { END, FADE, DUR } = K.timing(steps[steps.length - 1].end, T.end);
+          const ansAt = b4.at + 2.0;
+
+          const root = document.querySelector('[data-composition-id="lesson"]');
+          const s = K.stage(root.querySelector("svg.lesson"), { fade: FADE });
+          const C = s.C, { add, g, rr, tx, solid, show, showW, enter, packet, BACK } = s;
+          s.chrome(T.title, { sub: T.sub, sign: T.sign });
+          const { cards: CARDS, over: OVER } = s.layers;
+
+          // LINKS: Anna and Ben to the service, the service to the bank and to the database
+          const AX = 116.5, BX = 963.5, KX = 250, DX = 800;
+          s.link(AX, 416, AX, 448, C.violet); s.head(AX, 464, C.violet);
+          s.link(BX, 416, BX, 448, C.teal);
+          // Ben's query has no connection to take: the arrow ends in a stop bar
+          const stopped = [[b3.at + 1.1, ansAt + 0.7, 0.1, 0.1]];
+          showW(s.head(BX, 464, C.teal), stopped, { except: true });
+          showW(s.stop(BX, 459), stopped);
+          s.link(KX, 806, KX, 862, C.violet);
+          s.link(DX, 806, DX, 862, C.mute);
+          const dbBusy = (color, from, to) => { show(s.link(DX, 806, DX, 862, color), from, to, { in: 0.1, out: 0.15 }); packet(DX, 814, DX, 854, color, from, 0.4); };
+
+          // ANNA: her phone with the Pay button, which spins while she waits and turns teal when paid
+          const AN = s.phone(64, 240, 1.25, CARDS);
+          tx(13, 44, "$100", { size: 23, w: 800 }, AN);
+          solid(rr(12, 94, 38, 8, 4), C.mute, AN);
+          const payBtn = (fill, kind) => {
+            const q = g(AN), white = { fill: "none", stroke: C.paper, "stroke-linecap": "round", "stroke-linejoin": "round" };
+            solid(rr(12, 58, 60, 26, 13), fill, q);
+            if (kind === "spin") { add("circle", Object.assign({ cx: 28, cy: 71, r: 5.5, "stroke-width": 3, "stroke-dasharray": "20 15" }, white), q); solid(rr(39, 68, 24, 6, 3), C.paper, q); }
+            else if (kind === "done") { add("path", Object.assign({ d: "M22 71 l5 5 l9 -10", "stroke-width": 3.4 }, white), q); solid(rr(41, 68, 22, 6, 3), C.paper, q); }
+            else solid(rr(27, 68, 30, 6, 3), C.paper, q);
+            return q;
+          };
+          payBtn(C.violet);
+          showW(payBtn(C.violet, "spin"), [[a1.at + 0.7, a5.at + 0.5, 0.1, 0.1], [b1.at + 0.4, ansAt + 0.9, 0.1, 0.1], [c2.at + 0.4, c4.at + 2.0, 0.1, 0.1]]);
+          showW(payBtn(C.teal, "done"), [[a5.at + 0.5, b1.at, 0.1, 0.25], [ansAt + 0.9, fx0.at, 0.1, 0.25], [c4.at + 2.0, FADE, 0.1, 0.35]]);
+          tx(192, 292, T.anna, { size: 40, w: 800 }, CARDS);
+          const tenW = [[b1.at + 0.4, fx0.at, 0.2, 0.25], [c2.at + 0.4, r1.at, 0.2, 0.25]];
+          showW(tx(192, 328, T.annaNote, { fill: C.note }, CARDS), tenW, { except: true });
+          showW(tx(192, 328, T.ten, { fill: C.note }, CARDS), tenW);
+          tenW.forEach(([from, to]) => enter(169, 246, from, to, (q) => s.badge(169, 246, T.x10, q), OVER, 0.25));
+          s.tap(AX, 329, C.violet, a1.at + 0.6);
+
+          // BEN: his history screen, a spinner while he waits, teal rows when it loads
+          const BN = s.phone(911, 240, 1.25, CARDS);
+          solid(rr(12, 16, 34, 8, 4), C.ink, BN);
+          for (const yy of [32, 52, 72]) solid(rr(12, yy, 60, 14, 7), C.mute, BN);
+          const spin = (color) => add("circle", { cx: 42, cy: 102, r: 8, fill: "none", stroke: color, "stroke-width": 4.5, "stroke-dasharray": "32 19", "stroke-linecap": "round" }, BN);
+          showW(spin(C.orange), [[b3.at + 0.5, ansAt + 0.9, 0.1, 0.1]]);
+          showW(spin(C.teal), [[c3.at + 0.4, c3.at + 1.6, 0.1, 0.1]]);
+          const loaded = g(BN);
+          for (const yy of [32, 52, 72]) solid(rr(12, yy, 60, 14, 7), C.teal, loaded);
+          showW(loaded, [[ansAt + 0.9, fx0.at, 0.1, 0.25], [c3.at + 1.6, FADE, 0.1, 0.35]]);
+          tx(888, 292, T.ben, { size: 40, w: 800, anchor: "end" }, CARDS);
+          tx(888, 328, T.benNote, { fill: C.note, anchor: "end" }, CARDS);
+
+          // PAYMENTS SERVICE: its steps on the left, its pool on the right
+          s.card(40, 470, 1000, 336, 50);
+          s.server(80, 494, 1.1, CARDS);
+          tx(142, 528, T.svc, { size: 36, w: 800 }, CARDS);
+          const panel = s.steps(80, 576, 404, T.steps), RB = [616, 658, 700, 742], RA = [616, 672, 728];
+          const BEF = showW(g(CARDS), [[-1, fx0.at + 0.8, 0, 0.3], BACK]);
+          panel.label(T.before, C.lorange, C.orangeInk, BEF);
+          T.code.forEach((str, k) => panel.row(str, RB[k], BEF));
+          const AFT = showW(g(CARDS), [[fx0.at + 1.1, FADE, 0.2, 0.35]]);
+          panel.label(T.after, C.lviolet, C.violet, AFT);
+          const fx = [fx1, fx2, fx3];
+          T.code2.forEach((str, k) => showW(panel.row(str, RA[k]), [[fx[k].at + 0.6, FADE, 0.25, 0.35]]));
+
+          add("line", { x1: 510, y1: 562, x2: 510, y2: 784, stroke: C.mute, "stroke-width": 4, "stroke-linecap": "round" }, CARDS);
+          tx(544, 576, T.pool, { size: 30, w: 800 }, CARDS);
+          const SX = (i) => 578 + (i % 5) * 86, SY = (i) => 640 + Math.floor(i / 5) * 66, taken = [];
+          for (let i = 0; i < 10; i++) add("circle", { cx: SX(i), cy: SY(i), r: 26, fill: C.field, stroke: C.mute, "stroke-width": 4 }, CARDS);
+          const SLOTS = g(CARDS);
+          // a connection is taken: with waiting, it sits in a transaction that waits for the bank
+          const slot = (i, color, from, to, waiting) => {
+            taken.push([from, to]);
+            enter(SX(i), SY(i), from, to, (q) => {
+              add("circle", { cx: SX(i), cy: SY(i), r: 28, fill: color }, q);
+              if (waiting) add("path", { d: `M${SX(i)} ${SY(i) - 13} V${SY(i)} L${SX(i) + 10} ${SY(i) + 6}`, fill: "none", stroke: C.paper, "stroke-width": 5.5, "stroke-linecap": "round", "stroke-linejoin": "round" }, q);
+            }, SLOTS, 0.15);
+          };
+          const count = tx(544, 778, "", { w: 800 }, CARDS);
+          s.acts.push((t) => {
+            let n = 0;
+            for (const [from, to] of taken) if (t >= from && t < to) n++;
+            count.textContent = `${Math.min(n, 10)} of 10 taken`;
+            count.setAttribute("fill", n >= 10 ? C.orange : n ? C.ink : C.note);
+          });
+
+          // BANK: its note lights up while it thinks; the windows fill in below and are read at render time
+          s.card(40, 862, 480, 170, 46);
+          s.bank(70, 896, 1, CARDS);
+          tx(226, 940, T.bank, { size: 36, w: 800 }, CARDS);
+          const bankNote = (fill, color) => { const q = g(CARDS); solid(rr(226, 960, 222, 50, 25), fill, q); s.clock(254, 985, 11, color, q); tx(276, 995, T.bankNote, { size: 24, w: 800, fill: color }, q); return q; };
+          bankNote(C.field, C.note);
+          const thinking = [];
+          showW(bankNote(C.amber, C.ink), thinking);
+          const bankThinks = (from, to) => thinking.push([from, to, 0.15, 0.15]);
+
+          // DATABASE: Anna's row with its status field
+          s.card(560, 862, 480, 170, 46);
+          s.db(592, 898, 1, CARDS);
+          tx(704, 926, T.db, { size: 36, w: 800 }, CARDS);
+          const row1 = [a4.at + 1.4, b1.at, 0, 0.25], row2 = [c2.at + 1.6, FADE, 0, 0.35], idle = [b3.at + 1.4, ansAt + 0.6, 0.2, 0.2];
+          showW(tx(704, 964, T.dbNote, { size: 27, fill: C.note }, CARDS), [row1, row2, idle], { except: true });
+          const IDLE = showW(g(CARDS), [idle]);
+          T.idle.forEach((str, k) => tx(704, 964 + 34 * k, str, { size: 27, fill: C.note }, IDLE));
+          const dbRow = ([from, to, , out], status) => enter(800, 980, from, to, (q) => { tx(704, 964, T.row, { size: 27, w: 400, font: s.MONO }, q); status(q); }, CARDS, out);
+          const status = (q, word, fill, color, win) => { const f = g(q); s.tag(704, 998, T.st + word, fill, color, f); if (win) showW(f, [win]); };
+          dbRow(row1, (q) => status(q, T.appr, C.lteal, C.tealInk));
+          dbRow(row2, (q) => { status(q, T.pend, C.lorange, C.orangeInk, [-1, c4.at + 1.6, 0, 0]); status(q, T.appr, C.lteal, C.tealInk, [c4.at + 1.6, 1e9, 0, 0]); });
+
+          // chips: requests by the person or the service that sends them, replies on the same spot
+          const annaAsks = (from, to) => s.chip(192 + s.chipW(T.post) / 2, 376, T.post, { color: C.violet }, from, to, 0);
+          const annaHears = (from, to, out) => s.chip(192 + s.chipW(T.ok) / 2, 376, T.ok, { reply: true }, from, to, out);
+          const benAsks = (from, to) => s.chip(888 - s.chipW(T.hist) / 2, 376, T.hist, { color: C.teal }, from, to, 0);
+          const benHears = (from, to, out) => s.chip(888 - s.chipW(T.hres) / 2, 376, T.hres, { reply: true }, from, to, out);
+          const askBank = (from, to, x10) => s.chip(KX, 862, T.get, { color: C.violet, badge: x10 && T.x10 }, from, to, 0);
+          const bankSays = (from, to, x10) => s.chip(KX, 862, T.bal, { reply: true, badge: x10 && T.x10 }, from, to, 0.25);
+          const annaSends = (from) => packet(AX, 420, AX, 450, C.violet, from, 0.45);
+          // Ben's stopwatch: the text is a clock, the final color comes with the measured value
+          const timer = (from, to, out, color, text) => {
+            const q = g(OVER);
+            s.stopwatch(738, 408, color, q);
+            const n = tx(790, 447, "", { size: 34, w: 800 }, q);
+            s.acts.push((t) => text(n, t));
+            showW(q, [[from, to, 0.15, out]]);
+          };
+
+          // ① ANNA PAYS: one action per caption
+          let a = a1.at;
+          s.say(T.a1, a + 0.1, a2.at);
+          annaAsks(a + 0.7, a5.at + 0.5);
+          annaSends(a + 0.8);
+
+          a = a2.at;
+          s.say(T.a2, a + 0.1, a3.at);
+          panel.hl(RB[0], a + 0.6, a3.at + 0.4);
+          slot(0, C.violet, a + 0.8, a4.at + 2.2, true);
+          panel.bracket(RB[0] - 18, RB[3] + 18, C.amber, a + 1.0, fx0.at + 0.8, 0.3);
+          panel.legend(T.held, 792, C.orange, a + 1.2, a5.at + 0.6, 0.2, 0);
+          panel.legend(T.held2, 792, C.orange, a5.at + 0.6, fx0.at + 0.8, 0, 0.3);
+
+          a = a3.at;
+          s.say(T.a3, a + 0.1, a4.at);
+          panel.done(RB[0], a + 0.4, b1.at);
+          panel.hl(RB[1], a + 0.4, a4.at + 1.3);
+          askBank(a + 0.6, a4.at + 0.4);
+          bankThinks(a + 1.4, a4.at + 0.4);
+          panel.waits(RB[1], T.two, a + 1.4, a4.at + 0.4);
+
+          a = a4.at;
+          s.say(T.a4, a + 0.1, a5.at);
+          bankSays(a + 0.4, a5.at);
+          panel.done(RB[1], a + 1.3, b1.at);
+          panel.hl(RB[2], a + 1.3, a + 1.8);
+          dbBusy(C.violet, a + 1.3, a + 2.4);
+          panel.done(RB[2], a + 1.8, b1.at);
+          panel.hl(RB[3], a + 1.8, a + 2.4);
+          panel.done(RB[3], a + 2.4, b1.at);
+
+          a = a5.at;
+          s.say(T.a5, a + 0.1, b1.at);
+          packet(AX, 450, AX, 420, C.teal, a + 0.2, 0.35);
+          annaHears(a + 0.5, b1.at, 0.25);
+
+          // ② FAILURE: ten payments take all ten connections; Ben's query waits for one; question pause
+          a = b1.at;
+          s.say(T.b1, a + 0.1, b2.at);
+          annaAsks(a + 0.4, ansAt + 0.9);
+          for (let i = 0; i < 10; i++) { annaSends(a + 0.6 + i * 0.22); slot(i, C.violet, a + 1.3 + i * 0.22, ansAt + 0.6 + i * 0.03, true); }
+          panel.hl(RB[0], a + 1.2, b2.at + 0.4);
+
+          a = b2.at;
+          s.say(T.b2, a + 0.1, b3.at);
+          panel.done(RB[0], a + 0.4, fx0.at);
+          panel.hl(RB[1], a + 0.4, ansAt);
+          askBank(a + 0.4, ansAt, true);
+          bankThinks(a + 1.2, ansAt);
+          panel.waits(RB[1], T.two, a + 1.2, ansAt);
+          s.ring(532, 600, 436, 146, C.orange, a + 1.4, ansAt + 0.6);
+
+          a = b3.at;
+          s.say(T.b3, a + 0.1, bq.at);
+          benAsks(a + 0.5, ansAt + 0.9);
+          packet(BX, 420, BX, 446, C.teal, a + 0.6, 0.45);
+          timer(a + 1.3, fx0.at, 0.25, C.orange, (n, t) => { const u = s.prog(t, b4.at + 0.11, 1.9); n.textContent = (1.9 * u).toFixed(1) + " s"; n.setAttribute("fill", u >= 1 ? C.orange : C.ink); });
+
+          s.say([T.ask], bq.at, b4.at + 3.4);
+
+          a = ansAt;
+          bankSays(a, a + 1.8, true);
+          panel.done(RB[1], a, fx0.at);
+          panel.hl(RB[2], a, a + 0.3);
+          dbBusy(C.violet, a + 0.05, a + 0.6);
+          panel.done(RB[2], a + 0.3, fx0.at);
+          panel.hl(RB[3], a + 0.3, a + 0.6);
+          panel.done(RB[3], a + 0.6, fx0.at);
+          packet(BX, 420, BX, 450, C.teal, a + 0.7, 0.3);
+          slot(0, C.teal, a + 0.75, a + 1.05);
+          dbBusy(C.teal, a + 0.75, a + 1.1);
+          annaHears(a + 0.9, fx0.at, 0.25);
+          benHears(a + 0.9, fx0.at, 0.25);
+          show(tx(722, 445, T.q, { size: 26, w: 700, fill: C.note, anchor: "end" }, OVER), a + 1.1, fx0.at, { out: 0.25 });
+          s.say(T.b4, b4.at + 3.4, fx0.at);
+
+          // ③ THE FIX: the long bracket leaves, the new steps come one by one, each with its caption line
+          a = fx0.at;
+          s.fix(T.fixH, a + 0.2, T.fix.map((str, k) => [str, fx[k].at + 0.1]), c2.at);
+          panel.bracket(RA[0] - 18, RA[0] + 18, C.violet, fx1.at + 0.9, FADE, 0.35);
+          panel.legend(T.held, 792, C.violet, fx1.at + 1.1, c4.at + 2.2, 0.2, 0);
+          panel.legend(T.held8, 792, C.violet, c4.at + 2.2, FADE, 0, 0.35);
+          panel.bracket(RA[2] - 18, RA[2] + 18, C.violet, fx3.at + 0.9, FADE, 0.35);
+
+          // ④ REPLAY WITH THE FIX: saved as pending, the bank with no connection, Ben passes, the status update
+          a = c2.at;
+          s.say(T.c2, a + 0.1, c2b.at);
+          annaAsks(a + 0.4, c4.at + 2.0);
+          panel.hl(RA[0], a + 1.3, c2b.at + 0.4);
+          for (let i = 0; i < 10; i++) { annaSends(a + 0.6 + i * 0.22); slot(i, C.violet, a + 1.4 + i * 0.22, a + 1.7 + i * 0.22); }
+          dbBusy(C.violet, a + 1.4, a + 3.7);
+
+          a = c2b.at;
+          s.say(T.c2b, a + 0.1, c3.at);
+          panel.done(RA[0], a + 0.4, FADE, 0.35);
+          panel.hl(RA[1], a + 0.4, c4.at + 1.3);
+          askBank(a + 0.6, c4.at + 0.4, true);
+          bankThinks(a + 1.4, c4.at + 0.4);
+          panel.waits(RA[1], T.two, a + 1.4, c4.at + 0.4);
+          s.ring(532, 600, 436, 146, C.teal, a + 1.8, c3.at);
+
+          a = c3.at;
+          s.say(T.c3, a + 0.1, c4.at);
+          benAsks(a + 0.4, a + 1.6);
+          packet(BX, 420, BX, 450, C.teal, a + 0.5, 0.45);
+          slot(0, C.teal, a + 1.0, a + 1.3);
+          dbBusy(C.teal, a + 1.0, a + 1.4);
+          timer(a + 1.3, FADE, 0.35, C.teal, (n, t) => { const u = s.prog(t, c3.at + 1.31, 0.3); n.textContent = Math.round(6 * u) + " ms"; n.setAttribute("fill", u >= 1 ? C.teal : C.ink); });
+          benHears(a + 1.6, r1.at, 0.25);
+
+          a = c4.at;
+          s.say(T.c4, a + 0.1, r1.at);
+          bankSays(a + 0.4, r1.at, true);
+          panel.done(RA[1], a + 1.3, FADE, 0.35);
+          panel.hl(RA[2], a + 1.3, a + 2.1);
+          for (let i = 0; i < 10; i++) slot(i, C.violet, a + 1.4 + i * 0.07, a + 1.7 + i * 0.07);
+          dbBusy(C.violet, a + 1.4, a + 2.3);
+          panel.done(RA[2], a + 2.1, FADE, 0.35);
+          packet(AX, 450, AX, 420, C.teal, a + 1.8, 0.3);
+          annaHears(a + 2.0, FADE, 0.35);
+
+          // ⑤ BENEFITS in place of the step captions: the benefit is outlined on the scene first, then its row
+          s.benefits(T.board, r1.at + 0.1, [r1, r2, r3].map((st, k) => [T.L[k], st.at + 0.6]), END);
+          s.ring(722, 402, 168, 58, C.violet, r1.at + 0.1, FADE, 0.35);
+          s.ring(216, 950, 242, 70, C.violet, r2.at + 0.1, FADE, 0.35);
+          s.ring(66, 763, 292, 38, C.violet, r3.at + 0.1, FADE, 0.35);
+
+          // the conclusion takes the place of the benefits and stays until the fade
+          s.conclusion(T.end, END);
+
+          const tl = gsap.timeline({ paused: true });
+          const clock = { t: 0 };
+          tl.to(clock, { t: DUR, duration: DUR, ease: "none", onUpdate: () => s.render(clock.t) }, 0);
+          s.render(0);
+          window.__timelines = window.__timelines || {};
+          window.__timelines["lesson"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>
