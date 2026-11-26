@@ -44,7 +44,7 @@ export function verdict(g) {
   else if (g.bytes > TARGET) warnings.push(`${mb(g.bytes)} MB, target is 4.5 MB or less`);
   if (g.loop !== 0) errors.push(g.loop == null ? "no loop (NETSCAPE2.0)" : `loop count ${g.loop}, need infinite (0)`);
   if (!SIZES.some(([w, h]) => g.width === w && g.height === h)) errors.push(`frame ${g.width}×${g.height}, expected 1080×1350 or 720×900`);
-  if (g.frames > MAX_FRAMES) errors.push(`${g.frames} frames, LinkedIn takes up to ${MAX_FRAMES}: run gifpack, then --fps 12`);
+  if (g.frames > MAX_FRAMES) errors.push(`${g.frames} frames, LinkedIn takes up to ${MAX_FRAMES}: run gifpack, then render at fps × ${MAX_FRAMES} / ${g.frames}, rounded down`);
   // no upper limit: duration follows the time it takes to read the text
   if (g.duration < 8) errors.push(`duration ${g.duration} s is under 8`);
   return { errors, warnings };

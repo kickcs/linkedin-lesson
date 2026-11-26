@@ -16,8 +16,9 @@ export function serve(routes) {
     if (!route || rel.startsWith("..")) { res.writeHead(404).end(); return; }
     try {
       // a route can point at one file: then the prefix is the whole path
-      const body = await readFile(rel === "." ? route[1] : join(route[1], rel));
-      res.writeHead(200, { "content-type": TYPES[extname(rel)] || "application/octet-stream" }).end(body);
+      const file = rel === "." ? route[1] : join(route[1], rel);
+      const body = await readFile(file);
+      res.writeHead(200, { "content-type": TYPES[extname(file)] || "application/octet-stream" }).end(body);
     } catch {
       res.writeHead(404).end();
     }

@@ -76,6 +76,9 @@ A broad topic (“vector databases”, “what an AI engineer is”) is an area,
 3–4 angles, each with its own scenario and lesson type, and let the user choose. Append the angles
 not chosen to `ideas.md`.
 
+The topic question goes in a message of its own; the story (step 3) comes once the topic is chosen.
+A choice and a story asked together get one quick yes, and the story is never checked.
+
 Done when a topic or an angle is chosen.
 
 ## Step 3. Story — checkpoint
@@ -84,7 +87,7 @@ The story is the lesson, told to the user in plain words in the user's language 
 frame. Only the user confirms understanding: an approved card, the checks and a subagent's retelling
 find frame errors, but they do not prove that the viewer will understand the lesson.
 
-Decide five things:
+Decide six things:
 
 - **Lesson type** — the question the GIF answers. The type sets the flow:
   - “why” (a pattern, a trick): the usual way → one failure → the fix, where the term is first named →
@@ -98,6 +101,14 @@ Decide five things:
   asks about open-ear headphones”. The parts go by their real names (Database, Worker). The
   scenario's outcome is clear without knowing the technique: “Anna got $0” is clear to everyone, the
   chain “timeout → rollback → retry” only to an engineer.
+- **Mechanism** — what the system does in the scenario, as steps, one line per action, in the words
+  of the frame. In “why”, the steps before (the usual way, where the failure comes from) and the
+  steps after (the fix): `BEGIN → GET /balance, 2 s → INSERT → COMMIT` before,
+  `INSERT pending → GET /balance, no connection taken → UPDATE approved` after. In “how it works”,
+  the parts in order; in “how they differ”, the steps of each side. When the problem has several
+  common fixes, give 2–3 candidates, each with its steps after and its cost, and the user picks one,
+  as with the analogy: the user often has a fix in mind already, and a GIF built on another one has
+  to be rebuilt.
 - **Pause question** — one question to the viewer before the outcome the lesson exists for: in “why”,
   before the failure's outcome (“How much does Anna get?”); in “how it works”, before the result of
   the last part; in “how they differ”, before the result of the second side. The viewer guesses
@@ -115,15 +126,18 @@ Show the user the text, without frames:
 1. the lesson type;
 2. the key points;
 3. the scenario;
-4. the GIF's flow — one line per step, the pause question in its place;
-5. three analogies, each with the place where it breaks: the user picks one or none;
-6. the transfer.
+4. the mechanism: the steps before and after, or the fix candidates to pick from;
+5. the GIF's flow — one line per step, the pause question in its place;
+6. three analogies, each with the place where it breaks: the user picks one or none;
+7. the transfer.
 
-Ask whether the story makes it clear why the technique is needed. If not, rewrite the story: change
-the scenario or the flow, not the wording.
+Ask two things: whether the story makes it clear why the technique is needed, and whether the steps
+after are how the user would fix it. If the story is unclear, rewrite it: change the scenario or the
+flow, not the wording. If the user would fix it another way, their steps become the mechanism, and
+the prototype at step 4 runs them.
 
-Done when the user has said they understood why the technique is needed and has picked an analogy or
-declined one.
+Done when the user has said they understood why the technique is needed, has confirmed the mechanism
+(in “why”, the steps after or one of the candidates) and has picked an analogy or declined one.
 
 ## Step 4. Lesson card
 
@@ -266,12 +280,18 @@ icons, rough.js strokes, the fonts and palette from `frame.md`; stock, game and 
 your own frames made with Pillow or ffmpeg, do not go into the GIF. After editing, the file holds no
 skeleton text or numbers that are not in the card: check by searching the file. In `stage`, set
 `DUR` = FADE + 0.7 and the same number in `data-duration` of `index.html`: a skeleton with a
-different DUR fails with an error that names the required number. Do not hard-code widths as
+different DUR fails with an error that names the required number. After every change to the events,
+run `node $R/bin/pace.mjs` from the project root: it prints when each step starts, FADE and DUR, the
+`snapshot --at` list, the seam time and the `frame.png` filter below, and exits 1 naming what
+disagrees: the composition's DUR, the timeline, `data-duration` in `index.html`, or a conclusion that
+fades before it is read. Take every time in this step from its output. Do not hard-code widths as
 numbers: wrap a line that may not fit in `Sketch.fit`; use `Scene.under` for an underline,
 `Scene.seal` for a stamp, `Scene.cells` for board cells.
 
-`check` on 0.9.19 gives two expected warnings: `dead_stretch` (the motion runs as one clock tween
-inside the SVG, and the check cannot see it) and `film_silent` (the GIF has no sound). The error
+`check` on 0.9.19 gives expected warnings: `dead_stretch` (the motion runs as one clock tween
+inside the SVG, and the check cannot see it), `film_silent` (the GIF has no sound) and, once
+`compositions/lesson.html` is over 300 lines, `composition_file_too_large`: the lesson is one SVG on
+one clock, so it stays one file. The error
 `non_deterministic_code` on `Math.random` means `assets/kit` has the wrong rough.js: run
 `$R/bin/kit.mjs` again.
 
@@ -296,12 +316,15 @@ The 5 MB limit is hard (`✗`). The target is 4.5 MB: above it `gifcheck` prints
 from the Wiring section of the recipe's `frame.md`, do not touch `viewBox`; after them gifcheck must
 show 720×900, `data-width`/`data-height` alone are not enough: `check` gives
 `root_dimensions_mismatch`). If it is still over 5 MB after that, deliver an MP4 of the same frame
-and warn that the feed will show a player. Over 500 frames (`✗`) — `--fps 12`, then less motion:
-fewer flights and less typing. Do not cut reading pauses for bytes or for frames: after `gifpack`
-they cost neither.
+and warn that the feed will show a player. Over 500 frames (`✗`): render once more at
+⌊fps × 500 / frames⌋, with the fps of this render and the `frames` of its gifcheck line (after
+`gifpack` the frame count follows fps almost in proportion), and one fps lower if it is still over.
+Below 12 fps, cut motion instead: fewer flights and less typing. Do not cut reading pauses for bytes
+or for frames: after `gifpack` they cost neither.
 
-Take snapshots with `npx --yes hyperframes@0.9.19 snapshot --at 0,<event ends>`: the times when each
-event's drawing is finished, not their starts, otherwise the frame will be empty. Snapshots land in
+Take snapshots with `npx --yes hyperframes@0.9.19 snapshot --at 0,<event ends>` (the list from
+`pace.mjs`): the times when each event's drawing is finished, not their starts, otherwise the frame
+will be empty. Snapshots land in
 `.hyperframes/artifacts/snapshots/<id>/`; each run has its own id. Frame 0 carries the title and the
 subtitle; every number in the frame matches the card.
 
@@ -318,7 +341,7 @@ itself; do not compare it.
 
 The project's `frame.png` is the full final state of the GIF (all events and the conclusion), not the
 empty preview frame from step 6. After the last render, take it from the GIF: the last frame no later
-than `FADE − 0.3` (the lesson's FADE from `compositions/lesson.html`). `-ss` does not work: after
+than `FADE − 0.3` (`pace.mjs` prints the filter with the number). `-ss` does not work: after
 `gifpack` the pause before the fade is one long frame, and `-ss` lands on the first frame of the fade.
 
 ```bash
@@ -342,8 +365,9 @@ shortened or enlarged, and the build repeats from the render.
 If `check` or the render fails, debug it with the `hyperframes-cli` skill if it is installed,
 otherwise from `npx --yes hyperframes@0.9.19 <command> --help`.
 
-Done when gifcheck passes without errors, frame 0 has the title and subtitle, the seam matched byte
-for byte, the numbers are verified, and `frame.png` is taken from the GIF and read at 400 px.
+Done when `pace.mjs` and gifcheck pass without errors, frame 0 has the title and subtitle, the seam
+matched byte for byte, the numbers are verified, and `frame.png` is taken from the GIF and read at
+400 px.
 
 ## Step 8. Delivery
 

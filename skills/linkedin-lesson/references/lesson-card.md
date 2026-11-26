@@ -20,6 +20,12 @@ objects and arrows do not count:
 
 - <name in the frame> — <a plain-words explanation, as it stands in the frame: “carries notes to the bank”>
 
+## Mechanism
+
+The steps the user confirmed at step 3, one line per action, in the words of the frame: in “why”,
+before and after; in “how it works”, the parts in order; in “how they differ”, each side. The
+prototype in `research/` runs these steps, and the GIF events draw them.
+
 ## Analogy
 
 The analogy the user picked and where it breaks — or “no analogy”. Into the post per step 5 of the
@@ -90,8 +96,21 @@ In a silent GIF the captions carry what a voice would say in a video, so they ar
 ## GIF events
 
 The flow follows the lesson type (step 3 of the skill). The whole system is drawn first, then the GIF
-moves to the parts. 4–5 lines plus the conclusion: second — what appears — Sketch or Scene primitive,
-with the character count next to it.
+moves to the parts. One line per action plus the conclusion: second — what appears — Sketch or Scene
+primitive, with the character count next to it.
+
+An action is one thing the viewer watches happen: a person taps, a request flies, a reply comes back,
+a row changes its status, a connection is taken or given back. Each action has its own caption, and
+the caption appears before the action or with it: a viewer reads first, then watches. The caption
+says what the person or service does and what a reply means: “The bank answers: 340 on the card.”
+next to the chip `200 balance 340`. A chip flies about 1 s. The first pass through the scenario goes
+one action at a time; a replay (ten payments after one) can put several actions under one caption,
+because the viewer has already seen each of them.
+
+In “why”, the fix is drawn as a change of the mechanism: the steps before stand on the scene (a
+service steps panel with a `before` label), and the steps after appear one by one in their place,
+each with its caption, under an `after` label. A new result on the same scene does not show what
+changed; the steps do.
 
 Pace: drawing starts no later than 0.5 s; the first event with text comes 0.5 s after the
 participants are drawn; the next one comes when the current text has been read at 16.5 characters
@@ -128,9 +147,12 @@ and what surfaces from it in production>
 - [ ] Each part keeps its place from start to end: what stood on the left stays on the left.
 - [ ] Each term appears with its object and explanation; each caption is next to its object.
 - [ ] The meaning of a color is backed by a caption or a sign: the red $0 is labeled “crash”.
-- [ ] One motion at a time, and each shows a cause, an order or where to look; no more than three
-      flashes or outlines per second, no camera zooms.
+- [ ] On the first pass every event line holds one action: count the requests, replies, taps and
+      status changes in each line. Its caption comes before the action or with it.
+- [ ] Each motion shows a cause, an order or where to look; no more than three flashes or outlines
+      per second, no camera zooms.
 - [ ] A “why” lesson has one failure and one fix; each benefit is visible on the scene before its line.
+- [ ] In “why”, the steps after appear on the scene one by one, in the words of “Mechanism”.
 - [ ] The field below the sheet does not stay empty until the last third of the GIF: otherwise the
       layout is the tall sheet.
 - [ ] The pause question comes before the outcome and holds according to the pace.

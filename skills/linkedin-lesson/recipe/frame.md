@@ -2,14 +2,14 @@
 version: 1
 name: LinkedIn lesson GIF
 description: >
-  A silent looping educational GIF for LinkedIn. 4–5 events and a conclusion, each held while its
-  text is read; the loop is up to 500 frames after gifpack. The frame is a school chalkboard: the
-  green field holds what stays and accumulates (series, title, subtitle, board, conclusion, author
-  signature), the white sheet on it holds the scene, which draws itself: rough.js strokes appear,
-  hand-drawn Lucide icons play roles, objects fly and count. The title stands from frame 0, the
-  conclusion is the last event. The stage layout is a cheat sheet that assembles itself: the scaffold
-  stays, the step scene changes, the board accumulates, and by the conclusion the whole lesson is on
-  screen; actors — participants and the path between them.
+  A silent looping educational GIF for LinkedIn. One action per event and a conclusion, each held
+  while its text is read; the loop is up to 500 frames after gifpack. The frame is a school
+  chalkboard: the green field holds what stays and accumulates (series, title, subtitle, board,
+  conclusion, author signature), the white sheet on it holds the scene, which draws itself: rough.js
+  strokes appear, hand-drawn Lucide icons play roles, objects fly and count. The title stands from
+  frame 0, the conclusion is the last event. The stage layout is a cheat sheet that assembles
+  itself: the scaffold stays, the step scene changes, the board accumulates, and by the conclusion
+  the whole lesson is on screen; actors — participants and the path between them.
 unit: the frame — 1080×1350 (4:5, LinkedIn), logical SVG canvas 360×450, scale ×3
 principle: frame 0 carries the title and the whole system · up to three key points per GIF · the field holds what is permanent, the sheet holds the scene · the scaffold stays, the step scene changes, the board accumulates · each fact in one place · color carries meaning · numbers only from the card · render(t) is a pure function · a loop without a seam
 
@@ -75,11 +75,11 @@ components:
   scene: "Scene (kit/scene.js): pop — an object pops out with a bounce; place — moves along keys and is visible inside a window; out — the step scene fades out in 0.25 s; seal — a stamp with text; under — underlines a segment of a line, measures the width in the frame; cells — a row of board cells: total empty, n filled; t / h / kick — grotesque, the author's hand, section label; pace — step pace; pic — mini pictograms, everything else is Lucide icons"
 
 motion:
-  rhythm: "first motion before 0.5 s, 4–5 events at reading pace (pace), fade 0.35 s; an event that changes before it is read, the viewer reads as “hard and fast”; one motion at a time, and only where it shows a cause, an order or where to look"
+  rhythm: "first motion before 0.5 s, then one action per event at reading pace (pace), its caption before the action or with it (the lesson card, GIF events), fade 0.35 s; an event that changes before it is read, the viewer reads as “hard and fast”; motion only where it shows a cause, an order or where to look"
   question: "pause question: the question on the scene next to the object it is about, holds for its characters / 16.5 + 1.5 s, then the answer"
   comfort: "no more than three flashes (outlines, blinks) per second; no camera zooms"
   pace: "the next event starts after max(text appearance + characters / 16.5, end of motion + 0.5) s. Characters — all new text of the event: step, caption, method name. The intro is not held for reading: the first event comes 0.5 s after the participants are drawn; the title stands from frame 0, participant labels are read together with the first step. 16.5 characters per second sits just below the 17 cps Netflix allows for children's subtitles; 12–15 read as slow in a looping GIF. The conclusion holds for its characters / 16.5 + 1 s from the start of typing"
-  duration: "skeleton DUR and FADE: actors 12.4 / 11.7, stage 26.68 / 25.98. DUR = FADE + 0.7: the 0.35 s fade and as much again of empty lesson layer before the seam. FADE = conclusion start + its characters / 16.5 + 1 s (pace); the actors demo skeleton rounds it up to 0.1 s, stage computes it from `Scene.pace` without rounding. The actors skeleton is shorter, it has demo events; stage is a whole lesson (why a RAG bot makes things up); a lesson at reading pace usually comes out at 25–50 s (the outbox example is 50 s), there is no limit in seconds"
+  duration: "skeleton DUR and FADE: actors 12.4 / 11.7, stage 26.68 / 25.98. DUR = FADE + 0.7: the 0.35 s fade and as much again of empty lesson layer before the seam. FADE = conclusion start + its characters / 16.5 + 1 s (pace); the actors demo skeleton rounds it up to 0.1 s, stage computes it from `Scene.pace` without rounding. The actors skeleton is shorter, it has demo events; stage is a whole lesson (why a RAG bot makes things up); a lesson at reading pace usually comes out at 30–100 s (the outbox example is 50 s), there is no limit in seconds: frames are paid for with fps (render.budget); `bin/pace.mjs` prints FADE and DUR of a built lesson and checks them"
   loop: "the frame after the fade = frame 0: the chrome never fades, the lesson layer is empty at zero, cursors appear after zero; when the font finishes loading, the engine redraws the current frame, so the font size and the chalk line in frame 0 are the same as at the end"
   seek: "one paused timeline on the clock.t clock; Sketch.render(s, t) is a pure function, seeking backward gives the same frame"
   determinism: "no Math.random, Date.now, performance.now (in kit/rough.js Math.random is replaced by a seeded generator: check 0.9.x fails on it); the rough.js seed follows build order"
@@ -87,7 +87,7 @@ motion:
 render:
   gif: "npx --yes hyperframes@0.9.19 render --format gif --fps 15 --gif-loop 0 --output renders/<slug>.gif"
   pack: "node $R/bin/gifpack.mjs renders/<slug>.gif — right after the render: merges frames that change nothing into the previous one; pixels and duration stay the same"
-  budget: "≤ 5 MB (target ≤ 4.5 MB) and ≤ 500 frames after gifpack (LinkedIn help, Media file types supported on LinkedIn: “The limit for a GIF is 500 frames or 36,152,320 pixels.”, linkedin.com/help/linkedin/answer/a564109, read 2026-11-25; the Images API and ads take 250: for them compare the `frames` field of the gifcheck JSON line with 250); otherwise, in order: --fps 12 → 720×900 frame (edits in Wiring) → MP4. Do not cut reading pauses: after gifpack they cost neither frames nor bytes"
+  budget: "≤ 5 MB (target ≤ 4.5 MB) and ≤ 500 frames after gifpack (LinkedIn help, Media file types supported on LinkedIn: “The limit for a GIF is 500 frames or 36,152,320 pixels.”, linkedin.com/help/linkedin/answer/a564109, read 2026-11-25; the Images API and ads take 250: for them compare the `frames` field of the gifcheck JSON line with 250). Over 500 frames: render at ⌊fps × 500 / frames⌋, not below 12 (after gifpack the count follows fps almost in proportion). Over 4.5 MB, in order: --fps 12 → 720×900 frame (edits in Wiring) → MP4. Do not cut reading pauses: after gifpack they cost neither frames nor bytes"
   mp4: "last move: the same frame as MP4 (`render --format mp4 --output renders/<slug>.mp4`); warn the user that LinkedIn will show a player, not a loop"
   debug: "check or render failed — debug with the hyperframes-cli skill"
   check: "node $R/bin/gifcheck.mjs renders/<slug>.gif"
@@ -102,7 +102,7 @@ title, subtitle, board, conclusion and author signature. The white sheet on it i
 it draws itself and changes. The title stands from frame 0: in the LinkedIn feed it is seen before
 the GIF starts to move. Then strokes appear by hand, arrows are placed, icons fly and count. The last
 event is the conclusion on the field below the sheet. Each event holds while its text reads
-comfortably (`motion.pace`), so a lesson usually loops in 25–50 s. No sound. Before the build,
+comfortably (`motion.pace`), so a lesson usually loops in 30–100 s. No sound. Before the build,
 `bin/preview.mjs` takes the key frame (chalkboard, title, subtitle, conclusion): it also checks that
 the lines fit without a small font size.
 
@@ -191,13 +191,14 @@ board is counted once; `lead` is when the first text appears in the step: charac
 that point.
 
 Frame 0: the title and the chrome, the lesson layer is empty; the whole system is drawn first, then
-the GIF moves to the parts. First motion before 0.5 s, 4–5 events at reading pace (`motion.pace`). The
-diagram has up to three key points and up to three participants; anything not needed for the
-conclusion is not drawn. Each part has its place: what stood on the left at the start stays on the
-left. Color carries meaning and never alone: the red $0 is also labeled. The conclusion holds for its
-characters / 16.5 + 1 s from the start of typing, then the lesson layer fades out in 0.35 s and the
-loop returns to frame 0 without a jump. In the skeletons DUR = FADE + 0.7 (actors 12.4 / 11.7, stage
-26.68 / 25.98); the stage skeleton fails with an error by itself if `DUR` is not FADE + 0.7.
+the GIF moves to the parts. First motion before 0.5 s, then one action per event at reading pace
+(`motion.pace`). The diagram has up to three key points and up to three participants; anything not
+needed for the conclusion is not drawn. Each part has its place: what stood on the left at the start
+stays on the left. Color carries meaning and never alone: the red $0 is also labeled. The conclusion
+holds for its characters / 16.5 + 1 s from the start of typing, then the lesson layer fades out in
+0.35 s and the loop returns to frame 0 without a jump. In the skeletons DUR = FADE + 0.7 (actors
+12.4 / 11.7, stage 26.68 / 25.98); the stage skeleton fails with an error by itself if `DUR` is not
+FADE + 0.7.
 
 ## Wiring
 
@@ -219,7 +220,8 @@ touch the user's global skills and settings.
    pinned version from npm and caches it in `~/.cache/linkedin-lesson`.
 2. `cp $R/layouts/index.html index.html` and set `data-duration`
    on `#root` and `#lesson` to the lesson's `DUR`: for your own events DUR = FADE + 0.7, with FADE by
-   reading pace (`motion.pace`) (skeletons: stage 26.68, actors 12.4).
+   reading pace (`motion.pace`) (skeletons: stage 26.68, actors 12.4). Once the events are written,
+   `node $R/bin/pace.mjs` prints DUR and exits 1 if `index.html` disagrees.
    GSAP loads from `assets/kit`, not from a CDN.
 3. `cp $R/layouts/<stage|actors>.html compositions/lesson.html`.
    The skeleton is a sample lesson: replace the title, events and numbers with the card's; keep the
@@ -233,12 +235,12 @@ touch the user's global skills and settings.
    same line and check the result on a snapshot: `fit` has no lower limit, and text smaller than 10
    does not read — then shorten. Stamp — `Scene.seal`: the border is sized by the number of letters,
    the text is in caps, 4–10 letters.
-4. Check: `npx --yes hyperframes@0.9.19 check` (the warnings `dead_stretch` and `film_silent` are
-   expected, see Known Gaps), snapshots `npx --yes hyperframes@0.9.19 snapshot --at 0,<event ends>`:
-   the second when an event's drawing is finished (start + duration), not its start, otherwise the
-   frame has an empty spot. Snapshots land in `.hyperframes/artifacts/snapshots/<id>/`; each run has
-   its own id. Use them to check that text stays within the sheet and the field. Always check the
-   loop seam: `snapshot --at 0,<DUR−0.05>`; the first two PNGs must match byte for byte:
+4. Check: `npx --yes hyperframes@0.9.19 check` (the warnings listed in Known Gaps are expected),
+   snapshots `npx --yes hyperframes@0.9.19 snapshot --at 0,<event ends>` (`bin/pace.mjs` prints the
+   list): the second when an event's drawing is finished (start + duration), not its start,
+   otherwise the frame has an empty spot. Snapshots land in `.hyperframes/artifacts/snapshots/<id>/`;
+   each run has its own id. Use them to check that text stays within the sheet and the field. Always
+   check the loop seam: `snapshot --at 0,<DUR−0.05>`; the first two PNGs must match byte for byte:
    `d=$(ls -td .hyperframes/artifacts/snapshots/*/ | head -1); cmp "$d"frame-00-at-0s.png "$d"frame-01-at-<DUR−0.05>s.png`,
    otherwise something is left on screen at the loop point. Do not compare the timeline-end frame
    that `snapshot` adds by itself.
@@ -278,6 +280,9 @@ Tested with hyperframes 0.9.19: the stage skeleton passes `check` and renders to
   runs as one tween of the `clock.t` clock inside the lesson SVG, and the check cannot see it. Do not
   set `data-hold`.
 - **`film_silent` (warning) — expected:** the GIF has no sound.
+- **`composition_file_too_large` (warning) — expected over 300 lines:** a lesson with one action
+  per event outgrows it. Its hint to split scenes into files does not apply: the lesson is one SVG on
+  one clock.
 - **`non_deterministic_code` on `Math.random` in rough.js** — `check` 0.9.x fails on it, so in
   the kit rough.js takes its numbers from a seeded generator (`LICENSES.md`), and a drawing with a
   given seed is the same. Copy the kit whole from the recipe; do not drop in rough.js from npm.

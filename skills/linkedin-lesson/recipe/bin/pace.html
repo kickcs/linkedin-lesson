@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>html, body { margin: 0; } #host { position: relative; width: 1080px; height: 1350px; overflow: hidden; }</style>
+<script src="/assets/kit/gsap.min.js"></script><script src="/assets/kit/rough.js"></script><script src="/assets/kit/icons.js"></script>
+<script src="/assets/kit/theme.js"></script><script src="/assets/kit/sketch.js"></script><script src="/assets/kit/scene.js"></script>
+</head><body><div id="host"></div><pre id="out"></pre>
+<script>
+// For bin/pace.mjs: mounts the project's compositions/lesson.html as HyperFrames does and records every Scene.pace
+// call, the conclusion, the second the lesson layer starts to fade and the timeline length
+(async () => {
+  const m = { calls: [], conclusion: null, fade: null, dur: null, error: null };
+  addEventListener("error", (e) => { m.error = m.error || String(e.message || e.error); });
+  try {
+    const pace = Scene.pace, conclusion = Sketch.conclusion;
+    Scene.pace = (...a) => {
+      const r = pace(...a);
+      m.calls.push(r.map((st) => ({ at: st.at, end: st.end, chars: st.chars, label: String(st.text[0] || "") })));
+      return r;
+    };
+    Sketch.conclusion = (s, text, at, ...rest) => { m.conclusion = { text, at }; return conclusion(s, text, at, ...rest); };
+    const html = await (await fetch("/compositions/lesson.html")).text();
+    const tpl = new DOMParser().parseFromString(html, "text/html").querySelector("template");
+    const host = document.getElementById("host");
+    for (const node of [...tpl.content.childNodes]) {
+      if (node.nodeName === "SCRIPT") {
+        const sc = document.createElement("script");
+        sc.textContent = node.textContent;
+        host.appendChild(sc);
+      } else host.appendChild(document.importNode(node, true));
+    }
+    const tl = window.__timelines && window.__timelines.lesson;
+    const layer = host.querySelector('svg.lesson [data-layer="lesson"]');
+    if (tl && layer) {
+      m.dur = tl.duration();
+      const opacity = (t) => { tl.seek(t, false); return +getComputedStyle(layer).opacity; };
+      // the fade is the first second with opacity below 1: bisect between the conclusion and the end
+      let lo = m.conclusion && opacity(m.conclusion.at) === 1 ? m.conclusion.at : 0, hi = m.dur;
+      if (opacity(hi) < 1) {
+        while (hi - lo > 0.002) { const mid = (lo + hi) / 2; if (opacity(mid) < 1) hi = mid; else lo = mid; }
+        m.fade = lo;
+      }
+    }
+  } catch (e) {
+    m.error = m.error || String((e && e.message) || e);
+  }
+  document.getElementById("out").textContent = JSON.stringify(m);
+})();
+</script></body></html>

@@ -6,8 +6,9 @@ from `SKILL.md` by a relative path (`$S`, `$R` in the skill).
 
 - `SKILL.md` holds the steps; `references/lesson-card.md` and `recipe/frame.md` are read on demand.
   Change a rule in one place and point to it from the others.
-- `recipe/bin/` holds what the skill runs: the checks `gifcheck`, `postcheck`, `gifpack`, the key
-  frame `preview` and the kit installer `kit.mjs`; `chrome.mjs` and `serve.mjs` are their helpers.
+- `recipe/bin/` holds what the skill runs: the checks `gifcheck`, `postcheck`, `pace` (with its page
+  `pace.html`), `gifpack`, the key frame `preview` and the kit installer `kit.mjs`; `chrome.mjs` and
+  `serve.mjs` are their helpers.
   The tests import the logic from these files.
 - `recipe/kit/` and `recipe/layouts/` are copied into each lesson project, so they cannot import
   anything outside the kit. A brand theme (`recipe/theme.md`) changes only the palette keys of
@@ -20,7 +21,8 @@ from `SKILL.md` by a relative path (`$S`, `$R` in the skill).
 - GSAP stays out of git; `recipe/bin/kit.mjs` fetches the pinned version.
 
 When a rule changes, change its check too: the length and paragraph limits in `postcheck.mjs`, the
-size, frame, loop and duration limits in `gifcheck.mjs`, and the numbers quoted in `SKILL.md` must agree.
+size, frame, loop and duration limits in `gifcheck.mjs`, the reading pace and DUR = FADE + 0.7 in
+`pace.mjs`, and the numbers quoted in `SKILL.md` must agree.
 
 Run `npm test` after any change to `recipe/` (it needs Chrome; set `CHROME` if it is not found) and
 `npm run smoke` after a change to layouts, the kit or the HyperFrames pin. Everything in the repo is

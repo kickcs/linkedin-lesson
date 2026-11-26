@@ -98,16 +98,16 @@ tells an agent working on the fork the same.
 
 1. **Foundation**: load or create the brand profile (`brand-profile`, `voice-builder`).
 2. **Topic**: take your idea or offer a few.
-3. **Story**: tell the lesson in plain words before any frame; you confirm you understood why the
-   technique matters.
+3. **Story**: tell the lesson in plain words before any frame, with the steps before and after the
+   fix; you confirm you understood why the technique matters and pick the fix you would build.
 4. **Lesson card**: events of the GIF, texts, and every number with its source. Numbers from
    experience come from a small prototype run, repeatable with a seed.
 5. **Post text**: three paragraphs, an observation from practice, the problem, the solution
    (`hook-writer`, `no-ai-slop`, `postcheck`).
 6. **Approval**: the card, the hook options, the text and a key frame.
 7. **Build**: HyperFrames renders the GIF from the recipe in
-   [`skills/linkedin-lesson/recipe/`](skills/linkedin-lesson/recipe/); checks cover size (5 MB),
-   frames (500), the loop seam and reading on a phone.
+   [`skills/linkedin-lesson/recipe/`](skills/linkedin-lesson/recipe/); checks cover the reading
+   pace, size (5 MB), frames (500), the loop seam and reading on a phone.
 8. **Delivery**: the GIF, the post text and how to upload it (Media → Photo, so it keeps moving).
 
 ## Repository layout
