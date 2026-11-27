@@ -48,7 +48,7 @@ spacing:
   links: "x 116.5 and 963.5 from the phones (y 416–448, head at 464), x 250 and 800 to the bottom row (y 806–862); a chip on a link sits on its end, at the edge of the card it goes to"
   band: "captions y 1100–1250; signature y 1312"
 
-skeletons: "DUR / FADE: system 25.61 / 24.91 (how a cache-aside read works). The pool example (skill's examples/pool) is a whole “why” lesson: DUR 100.99"
+skeletons: "DUR / FADE: system 20.51 / 19.81 (how a cache-aside read works). The pool example (skill's examples/pool) is a whole “why” lesson: DUR 88.48"
 ---
 
 ## Overview
@@ -100,8 +100,9 @@ fields. Sizes are in the front matter; captions 44–46 read on a phone at 400 p
 lines (“|” breaks) without one.
 
 A request is a chip outlined in its flow's color on white; a reply is a chip on `lteal` with a teal
-outline; a count of requests is a violet badge on its corner (“×10”). A chip's width comes from its
-characters (`s.chipW`), so a chip is never measured. A database field is a tag (`s.tag`): `status:
+outline; a load of requests is a violet badge on its corner (“×10”), while events the mechanism
+counts are drawn one by one with their owners (the lesson card, GIF events). A chip's width comes
+from its characters (`s.chipW`), so a chip is never measured. A database field is a tag (`s.tag`): `status:
 pending` on `lorange` in `orangeInk`, `status: approved` on `lteal` in `tealInk`. Names and notes
 beside a part, card titles and panel rows are in ink or note color, never in a light color.
 
@@ -161,8 +162,8 @@ The global `Cards` from `assets/kit/cards.js`: `C` (palette), `SANS`, `MONO`, `C
 
 ## Known Gaps
 
-Tested with hyperframes 0.9.19: the `system` skeleton renders at 15 fps to 385 frames, after gifpack
-94 frames and 0.57 MB. The pool example passes `check`, renders at 14 fps to 1414 frames and after
-gifpack to 479 frames and 2.71 MB; at 15 fps it lands at the 500-frame limit, so a lesson of about
-100 s renders at 14. Both seams match byte for byte. `check` gives the same expected warnings as
+Tested with hyperframes 0.9.19: the `system` skeleton renders at 15 fps to 308 frames, after gifpack
+95 frames and 0.56 MB. The pool example passes `check`, renders at 14 fps to 1239 frames and after
+gifpack to 477 frames and 2.72 MB; at 15 fps it comes to 508, over the limit, so a lesson of about
+90 s renders at 14. Both seams match byte for byte. `check` gives the same expected warnings as
 any look (`frame.md`).

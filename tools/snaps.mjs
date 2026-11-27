@@ -7,7 +7,7 @@ const out = join(ROOT, "tests", "out");
 mkdirSync(out, { recursive: true });
 const MOMENTS = { actors: [0, 2.0, 3.9, 6.2, 9.0, 12.4],
   stage: [0, 3.9, 5.6, 6.9, 9.8, 14.6, 18.9, 25.6, 26.68],
-  system: [0, 5, 9, 14, 19, 24, 25.61] };
+  system: [0, 4.45, 8.43, 13.98, 17.54, 19.51, 20.51] };
 // Board's skeletons mount through layout.html, the Cards skeleton through cards-layout.html
 const PAGES = { system: ["cards", (t) => `/cards-layout.html?src=/layouts/system.html&t=${t}`] };
 // node tools/snaps.mjs [layout …]: with no names, snaps all of them

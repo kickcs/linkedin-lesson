@@ -105,6 +105,10 @@
       });
       return els;
     };
+    // an invisible rect that changes on every frame forces a full repaint: a partial one alternates two antialiasing
+    // variants on a still frame, and gifpack cannot merge the pause
+    const repaint = add("rect", { width: "100%", height: "100%", fill: "none", "fill-opacity": 0, "pointer-events": "none", "data-role": "repaint" });
+    acts.push((t) => repaint.setAttribute("fill", `rgb(${Math.round(t * 1000) % 256},0,0)`));
     const render = (t) => { for (const a of acts) a(t); };
 
     // ---- frame: field, series, title, subtitle, signature; then the layers links → cards → over → caps

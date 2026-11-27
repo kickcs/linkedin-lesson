@@ -56,6 +56,10 @@
     document.fonts.addEventListener("loadingdone", () => render(s, s.t));
     const fade = opt && opt.fade;
     if (fade != null) s.acts.push((t) => { s.root.style.opacity = t > fade ? 1 - prog(t, fade, 0.35) : 1; });
+    // an invisible rect that changes on every frame forces a full repaint: a partial one alternates two antialiasing
+    // variants on a still frame, and gifpack cannot merge the pause
+    const repaint = el("rect", { width: "100%", height: "100%", fill: "none", "fill-opacity": 0, "pointer-events": "none", "data-role": "repaint" }, svg);
+    s.acts.push((t) => repaint.setAttribute("fill", `rgb(${Math.round(t * 1000) % 256},0,0)`));
     return s;
   }
   function render(s, t) { s.t = t; for (const f of s.acts) f(t); }

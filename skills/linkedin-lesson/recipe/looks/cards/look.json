@@ -1,6 +1,6 @@
 {
   "name": "Cards",
-  "layouts": { "system": 25.61 },
+  "layouts": { "system": 20.51 },
   "min": { "title": 70, "sub": 30, "end": 60 },
   "endLines": 2,
   "theme": false

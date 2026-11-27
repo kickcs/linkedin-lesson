@@ -33,14 +33,15 @@
             a4: ["Anna gets her profile. The next read", "comes from the cache."],
             end: "Read the cache first.",
           };
-          // what the viewer reads in each step; text that stays on screen is counted once
+          // what the viewer reads anew in each step (frame.md, motion.pace): the caption and the labels it does not say;
+          // a chip that repeats the caption counts none, and the intro counts none
           const P = K.step;
           const steps = K.pace([
-            P([T.anna, T.svc, T.steps, T.cache, T.db, ...T.code], 0.5, 0.1),
-            P([...T.a1, T.get], 1.4, 0.1),
-            P([...T.a2, T.miss], 1.4, 0.1),
+            P([], 0.5, 0),
+            P([...T.a1], 1.4, 0.1),
+            P([...T.a2], 1.4, 0.1),
             P([...T.a3, T.sel, T.row, T.key], 2.8, 0.1),
-            P([...T.a4, T.ok], 1.2, 0.1),
+            P([...T.a4], 1.2, 0.1),
           ], 0.2, 16.5);
           const [, a1, a2, a3, a4] = steps;
           // the conclusion comes when the last step ends; DUR goes into data-duration of index.html

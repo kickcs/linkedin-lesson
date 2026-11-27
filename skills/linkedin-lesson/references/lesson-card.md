@@ -48,7 +48,10 @@ The look from step 4 and its layout for the lesson type, as the look's `look.md`
 - **Cards:** `system` for every type; which parts are cards, in which row, and what the main card
   holds (a steps panel, a pool, a cache); in “how they differ”, the two columns.
 
-What we do not draw, though it is true: one line, so that the diagram holds only the key points.
+What we do not draw, though it is true: one line, so that the diagram holds only the key points. A
+side branch of the mechanism (a failed retry, a second cycle) goes here too. If the GIF then shows a
+path the recorded run did not take, re-run the prototype with a parameter that takes it (the bank
+comes back before the first trial) and cite that run in “Facts”.
 
 ## Facts
 
@@ -112,6 +115,17 @@ next to the chip `200 balance 340`. A chip flies about 1 s. The first pass throu
 one action at a time; a replay (ten payments after one) can put several actions under one caption,
 because the viewer has already seen each of them.
 
+Three shortcuts keep the GIF on its main path. A usual day that only sets the scene (a payment that
+goes through) takes two captions, the request and the answer; the steps the failure comes from stay
+one action per caption. Two results of one event in a row (the breaker closes, the payment is marked
+paid) share one caption. A montage of identical events under one caption (five shoppers failing in
+turn) moves on every 0.25 s, because each event keeps its name on the scene.
+
+When the mechanism counts events toward a threshold (five failures open the breaker), draw each event
+with its owner's name from the run: the counter's slots fill with the names, the person's name
+changes with each event, and the caption says whose events count (“5 failures in a row, whoever
+paid”). A `×5` badge on one person reads as that person failing five times.
+
 In “why”, the fix is drawn as a change of the mechanism: the steps before stand on the scene (a
 service steps panel with a `before` label), and the steps after appear one by one in their place,
 each with its caption, under an `after` label. A new result on the same scene does not show what
@@ -119,9 +133,11 @@ changed; the steps do.
 
 Pace: drawing starts no later than 0.5 s; the first event with text comes 0.5 s after the
 participants are drawn; the next one comes when the current text has been read at 16.5 characters
-per second from its appearance, and no earlier than the end of the motion + 0.5 s. The pause question
-holds for its characters / 16.5 + 1.5 s, then the answer comes. In a “why” lesson each benefit is
-first visible on the scene, then its line appears.
+per second from its appearance, and no earlier than the end of the motion + 0.5 s. The characters
+next to each line are counted as `motion.pace` in `frame.md` says: a chip that repeats its caption
+counts none, and neither does the intro. The pause question and its answer follow
+`motion.question` there: an answer the viewer has already seen comes at once. In a “why” lesson each
+benefit is first visible on the scene, then its line appears.
 
 - 0.1 — <what> — <in Board: drawIn | text | cursor | fly | meter | counter | Scene.pop | place | out | seal | …;
   in Cards: say | chip | packet | enter | hl | done | ring | fix | benefits | …>
@@ -148,7 +164,8 @@ and what surfaces from it in production>
 
 ## Pre-approval check
 
-- [ ] Every event serves a key point; the rest is cut or recorded in “what we do not draw”.
+- [ ] Every event serves a key point; the rest, side branches included, is cut or recorded in “what
+      we do not draw”.
 - [ ] The whole system is visible at once before the GIF moves to the parts.
 - [ ] Each part keeps its place from start to end: what stood on the left stays on the left.
 - [ ] Each term appears with its object and explanation; each caption is next to its object.
@@ -161,7 +178,9 @@ and what surfaces from it in production>
 - [ ] In “why”, the steps after appear on the scene one by one, in the words of “Mechanism”.
 - [ ] In Board, the field below the sheet does not stay empty until the last third of the GIF:
       otherwise the layout is the tall sheet.
-- [ ] The pause question comes before the outcome and holds according to the pace.
+- [ ] The pause question comes before the outcome and holds according to the pace; an answer the
+      viewer has already seen comes at once, not counted up again.
+- [ ] Events the mechanism counts are drawn one by one, each with its owner's name from the run.
 - [ ] A backend lesson shows the row status, the request and the response at every step where they
       change.
 - [ ] Every number in the frame and the text has a line in “Facts”.

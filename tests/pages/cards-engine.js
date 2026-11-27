@@ -65,6 +65,16 @@
     s.render(10.36);
     eq(seen(svg), zero);
   });
+  check("a still frame repaints in full: an invisible rect changes on every frame at 12–30 fps", () => {
+    const { s, svg } = fresh(sample);
+    const r = svg.querySelector('[data-role="repaint"]');
+    ok(r, "the repaint rect is there");
+    eq(r.getAttribute("fill-opacity"), "0");
+    for (const fps of [12, 13, 14, 15, 16, 17, 20, 24, 25, 30]) for (const t of [0, 3.3, 41.7, 99.9]) {
+      s.render(t); const a = r.getAttribute("fill");
+      s.render(t + 1 / fps); ok(r.getAttribute("fill") !== a, `same fill at ${t} s and the next frame at ${fps} fps`);
+    }
+  });
   check("a part hidden in the lesson comes back with BACK", () => {
     const { s, out: el } = fresh((s) => s.showW(s.tx(64, 600, "before", {}, s.layers.cards), [[-1, 2, 0, 0.3], s.BACK]));
     const vis = (t) => { s.render(t); return el.style.display !== "none"; };

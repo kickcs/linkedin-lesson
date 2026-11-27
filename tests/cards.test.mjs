@@ -16,7 +16,7 @@ for (const x of engine.results) test(`engine: ${x.name}`, () => assert.ok(x.ok, 
 
 // the skeleton and the whole example lesson, each with the DUR it is built for
 const tmp = mkdtempSync(join(tmpdir(), "cards-"));
-for (const [name, src, dur] of [["system", "/layouts/system.html", CARDS.layouts.system], ["pool example", "/examples/pool/lesson.html", 100.99]]) {
+for (const [name, src, dur] of [["system", "/layouts/system.html", CARDS.layouts.system], ["pool example", "/examples/pool/lesson.html", 88.48]]) {
   const r = await page(`/cards-layout.html?src=${src}`, "cards");
   test(`${name}: page reported`, () => assert.ok(r.results.length > 0));
   for (const x of r.results) test(`${name}: ${x.name}`, () => assert.ok(x.ok, x.error));

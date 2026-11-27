@@ -104,7 +104,10 @@ Decide six things:
 - **Scenario** — one concrete case on the real parts of the system: “$100 to Anna”, “a shopper
   asks about open-ear headphones”. The parts go by their real names (Database, Worker). The
   scenario's outcome is clear without knowing the technique: “Anna got $0” is clear to everyone, the
-  chain “timeout → rollback → retry” only to an engineer.
+  chain “timeout → rollback → retry” only to an engineer. The harm lands on what a person sees
+  (“Anna waits 10 s for Payment failed, and Ben a minute later waits the same”); server internals
+  (workers, threads, a cascade) carry the story only when the GIF draws them as a part with its own
+  caption, as the pool lesson draws its connection pool.
 - **Mechanism** — what the system does in the scenario, as steps, one line per action, in the words
   of the frame. In “why”, the steps before (the usual way, where the failure comes from) and the
   steps after (the fix): `BEGIN → GET /balance, 2 s → INSERT → COMMIT` before,
@@ -112,7 +115,10 @@ Decide six things:
   the parts in order; in “how they differ”, the steps of each side. When the problem has several
   common fixes, give 2–3 candidates, each with its steps after and its cost, and the user picks one,
   as with the analogy: the user often has a fix in mind already, and a GIF built on another one has
-  to be rebuilt.
+  to be rebuilt. When the fix combines two techniques (a breaker that saves payments as `pending`),
+  give each its own steps, benefits and cost, so a gain of one is never credited to the other. The
+  main path only: a side branch (a failed retry, a second cycle) is offered as optional, and by
+  default goes to “what we do not draw”.
 - **Pause question** — one question to the viewer before the outcome the lesson exists for: in “why”,
   before the failure's outcome (“How much does Anna get?”); in “how it works”, before the result of
   the last part; in “how they differ”, before the result of the second side. The viewer guesses
@@ -344,7 +350,9 @@ and warn that the feed will show a player. Over 500 frames (`✗`): render once 
 ⌊fps × 500 / frames⌋, with the fps of this render and the `frames` of its gifcheck line (after
 `gifpack` the frame count follows fps almost in proportion), and one fps lower if it is still over.
 Below 12 fps, cut motion instead: fewer flights and less typing. Do not cut reading pauses for bytes
-or for frames: after `gifpack` they cost neither.
+or for frames: after `gifpack` they cost neither. Under 500 frames, when the same formula gives at
+least one fps more (often after cuts or a re-time): render once more at that fps while the file stays
+under 4.5 MB, and tell the user; the motion gets smoother for free.
 
 Take snapshots with `npx --yes hyperframes@0.9.19 snapshot --at 0,<event ends>` (the list from
 `pace.mjs`): the times when each event's drawing is finished, not their starts, otherwise the frame
@@ -384,7 +392,8 @@ ffmpeg -loglevel error -y -i frame.png -vf scale=400:-1 /tmp/<slug>-phone.png
 ```
 
 Every caption on the scaled-down frame reads without zooming in; one that does not read gets
-shortened or enlarged, and the build repeats from the render.
+shortened or enlarged, and the build repeats from the render. Take any other moment of the GIF with
+the same `select='lte(t,<seconds>)'` filter: `-ss` lands past a merged pause and shows a later event.
 
 If `check` or the render fails, debug it with the `hyperframes-cli` skill if it is installed,
 otherwise from `npx --yes hyperframes@0.9.19 <command> --help`.

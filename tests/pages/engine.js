@@ -40,6 +40,16 @@ check("erasing fades the lesson layer, never the chrome", () => {
   S.render(s, 0);
   eq(num(s.root.style.opacity), 1);
 });
+check("a still frame repaints in full: an invisible rect changes on every frame at 12–30 fps", () => {
+  const s = fresh(sample);
+  const r = s.svg.querySelector('[data-role="repaint"]');
+  ok(r, "the repaint rect is there");
+  eq(r.getAttribute("fill-opacity"), "0");
+  for (const fps of [12, 13, 14, 15, 16, 17, 20, 24, 25, 30]) for (const t of [0, 3.3, 41.7, 99.9]) {
+    S.render(s, t); const a = r.getAttribute("fill");
+    S.render(s, t + 1 / fps); ok(r.getAttribute("fill") !== a, `same fill at ${t} s and the next frame at ${fps} fps`);
+  }
+});
 check("text types out letter by letter, without at it stands whole", () => {
   const s = fresh();
   const t = S.text(s, 0, 20, [["abcd", S.C.ink], ["ef", S.C.red]], {}, 1, 1);

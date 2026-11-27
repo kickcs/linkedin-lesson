@@ -18,7 +18,8 @@ from `SKILL.md` by a relative path (`$S`, `$R` in the skill).
   the kit. The first look in `recipe/looks.md` is the default (`DEFAULT_LOOK` in `kit.mjs`).
 - A new look is a new folder: its engine reports the steps of its pace function to
   `window.LessonPace.calls` and its conclusion as `{text, at, node}` to `window.LessonPace.conclusion`
-  (`pace.html` reads them), its `kit/preview.html` prints `{fontsOk, title, sub, end}` for
+  (`pace.html` reads them), its `stage` keeps the full-frame repaint rect (`frame.md`, Known Gaps),
+  its `kit/preview.html` prints `{fontsOk, title, sub, end}` for
   `preview.mjs`, its skeletons pass `pace.mjs`, `check` and the seam. Add it to `recipe/looks.md` with
   a sample frame in `examples/`, give it tests and a `tools/smoke-render.sh` run.
 - A brand theme (`recipe/looks/board/theme.md`) is Board's only: it changes the palette keys of

@@ -76,14 +76,14 @@ test("cards system skeleton: five steps, DUR from look.json, exit 0", async () =
   assert.match(r.stdout, new RegExp(`DUR ${dur.toFixed(2).replace(".", "\\.")}`));
   assert.equal(r.stdout.split("\n").filter((l) => /→/.test(l)).length, 5);
 });
-test("cards pool example: DUR 100.99, exit 0", async () => {
+test("cards pool example: DUR 88.48, exit 0", async () => {
   const src = fileURLToPath(new URL("../skills/linkedin-lesson/examples/pool/lesson.html", import.meta.url));
-  const r = await run(project("pool", 100.99, undefined, "cards", src));
+  const r = await run(project("pool", 88.48, undefined, "cards", src));
   assert.equal(r.code, 0, r.stderr);
-  assert.match(r.stdout, /DUR 100\.99/);
+  assert.match(r.stdout, /DUR 88\.48/);
 });
 test("a cards lesson that fades a second early: exit 1, the conclusion is not read", async () => {
-  const r = await run(project("system", 25.61, (s) => s.replace('{ fade: FADE }', "{ fade: FADE - 1 }"), "cards"));
+  const r = await run(project("system", 20.51, (s) => s.replace('{ fade: FADE }', "{ fade: FADE - 1 }"), "cards"));
   assert.equal(r.code, 1);
   assert.match(r.stderr, /holds [\d.]+ s, it needs [\d.]+/);
 });
