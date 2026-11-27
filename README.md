@@ -117,8 +117,9 @@ look is a new folder next to the others and a line in `recipe/looks.md`. Run `np
 4. **Look**: pick how the GIF is drawn, from sample frames.
 5. **Lesson card**: events of the GIF, texts, and every number with its source. Numbers from
    experience come from a small prototype run, repeatable with a seed.
-6. **Post text**: three paragraphs, an observation from practice, the problem, the solution
-   (`hook-writer`, `no-ai-slop`, `postcheck`).
+6. **Post text**: three short paragraphs, up to 450 characters, with two or three phrases in bold:
+   an observation from practice, the problem, the solution (`hook-writer`, `no-ai-slop`, `bold`,
+   `postcheck`).
 7. **Approval**: the card, the hook options, the text and a key frame.
 8. **Build**: HyperFrames renders the GIF from the recipe in
    [`skills/linkedin-lesson/recipe/`](skills/linkedin-lesson/recipe/); checks cover the reading

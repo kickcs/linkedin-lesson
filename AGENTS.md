@@ -9,8 +9,8 @@ from `SKILL.md` by a relative path (`$S`, `$R` in the skill).
   the others: `frame.md` holds what every look keeps (frame, pace, loop, render, budget), `look.md`
   what is the look's own.
 - `recipe/bin/` holds what the skill runs: the checks `gifcheck`, `postcheck`, `pace` (with its page
-  `pace.html`), `gifpack`, the key frame `preview` and the kit installer `kit.mjs`; `chrome.mjs` and
-  `serve.mjs` are their helpers.
+  `pace.html`), `gifpack`, the key frame `preview`, the post's bold letters `bold` and the kit
+  installer `kit.mjs`; `chrome.mjs` and `serve.mjs` are their helpers.
   The tests import the logic from these files.
 - Each look lives in `recipe/looks/<id>/`: `look.md`, `look.json` (name, layouts with their
   skeleton's DUR, the preview's minimum font sizes, the conclusion's lines, whether it takes a theme), `kit/` and `layouts/`.
@@ -31,10 +31,10 @@ from `SKILL.md` by a relative path (`$S`, `$R` in the skill).
   keep them byte-identical and record a new upstream commit in `THIRD_PARTY.md` when updating.
 - GSAP stays out of git; `recipe/bin/kit.mjs` fetches the pinned version.
 
-When a rule changes, change its check too: the length and paragraph limits in `postcheck.mjs`, the
-size, frame, loop and duration limits in `gifcheck.mjs`, the reading pace and DUR = FADE + 0.7 in
-`pace.mjs` and in every look's engine, the minimum font sizes and skeleton DUR in each `look.json`,
-and the numbers quoted in `SKILL.md` must agree.
+When a rule changes, change its check too: the length, paragraph, hashtag and bold limits in
+`postcheck.mjs`, the size, frame, loop and duration limits in `gifcheck.mjs`, the reading pace and
+DUR = FADE + 0.7 in `pace.mjs` and in every look's engine, the minimum font sizes and skeleton DUR in
+each `look.json`, and the numbers quoted in `SKILL.md` must agree.
 
 Run `npm test` after any change to `recipe/` (it needs Chrome; set `CHROME` if it is not found) and
 `npm run smoke` after a change to layouts, the kit or the HyperFrames pin. Everything in the repo is

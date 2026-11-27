@@ -1,5 +1,5 @@
-A lot of problems come from edge cases and outages. We often don't plan for them when we design a service, and start thinking about them only after something breaks in production.
+A lot of problems come from outages we don't plan for at design time.
 
-Take a money transfer. The service saves it, then calls the bank. If the service crashes in between, the transfer is in the database, but the bank never gets the request, and Anna gets $0.
+Take a money transfer. The service saves it, then calls the bank. If the service crashes in between, the bank never gets the request, and 𝗔𝗻𝗻𝗮 𝗴𝗲𝘁𝘀 $𝟬.
 
-To solve this, we can use a transactional outbox. The service saves the transfer and a “pay Anna” note in one write. A separate worker carries the note to the bank until it confirms, and the bank pays each note once. Nothing is lost, but the app hears “accepted” instead of “done”.
+To solve this, we can use a 𝘁𝗿𝗮𝗻𝘀𝗮𝗰𝘁𝗶𝗼𝗻𝗮𝗹 𝗼𝘂𝘁𝗯𝗼𝘅. The service saves the transfer and a “pay Anna” note in one write. A worker carries the note to the bank until it confirms, so 𝗻𝗼𝘁𝗵𝗶𝗻𝗴 𝗶𝘀 𝗹𝗼𝘀𝘁.

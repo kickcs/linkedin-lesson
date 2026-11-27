@@ -1,11 +1,15 @@
 #!/usr/bin/env node
-// Post text check: three paragraphs, hook, length, no emoji or links, a question only in the hook, hashtags on the last line
+// Post text check: three paragraphs, hook, length, two or three bold phrases, no emoji or links, a question only in the
+// hook, the series hashtag on the last line
 import { readFileSync, realpathSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 
-export const HOOK_MAX = 80, POST_MAX = 700, TAGS_MAX = 3, PARAS = 3;
+export const HOOK_MAX = 80, POST_MAX = 450, TAGS_MAX = 1, PARAS = 3, BOLD_MIN = 2, BOLD_MAX = 3;
 const len = (s) => [...s].length;
 const LABEL = /^Day \d+\/\d+ of [^.]*\.\s+/;
+// a phrase in bold.mjs's letters: quotes, spaces and punctuation between them stay in the phrase
+const B = "[\\u{1D5D4}-\\u{1D607}\\u{1D7EC}-\\u{1D7F5}]";
+const BOLD = new RegExp(`${B}+(?:[^\\p{L}\\p{N}\\n]*${B}+)*`, "gu");
 
 // the hook is the first sentence of the first paragraph; in a series post it includes the "Day N/30 of …" label
 export function hookOf(para) {
@@ -31,8 +35,11 @@ export function checkPost(text) {
   if ([(paras[0] || "").slice(hook.length), ...paras.slice(1)].some((p) => p.includes("?")))
     errors.push("question outside the hook: no closing question to the reader");
   if (/https?:\/\/|www\./i.test(text)) errors.push("link in text: it goes in the first comment");
-  if (tags.length > TAGS_MAX) errors.push(`${tags.length} hashtags, max ${TAGS_MAX}`);
+  if (tags.length > TAGS_MAX) errors.push(`${tags.length} hashtags, max ${TAGS_MAX}: the series hashtag only`);
   if (paras.some((p) => /(^|\s)#[\p{L}\p{N}_]/u.test(p))) errors.push("hashtags only on the last line");
+  if (text.includes("**")) errors.push("** marks left: run bold.mjs on the file");
+  const bolds = (body.match(BOLD) || []).length;
+  if (bolds < BOLD_MIN || bolds > BOLD_MAX) errors.push(`${bolds} bold phrases: need ${BOLD_MIN}–${BOLD_MAX}, marked **like this** and converted by bold.mjs`);
   return errors;
 }
 

@@ -146,20 +146,21 @@ benefit is first visible on the scene, then its line appears.
 
 Hook variants — 3–4 first sentences on different `hook-writer` mechanisms, each with a line: the
 mechanism and which problem it names. The user chooses at step 7; the chosen one goes into the text
-below. Three paragraphs, up to 700 characters including hashtags; order and rules — step 6 of the
-skill.
+below. Three short paragraphs, up to 450 characters including the hashtag, two or three phrases
+marked `**bold**`; order and rules — step 6 of the skill.
 
 1. <hook> — <mechanism>: <which problem it names>
 
 ```
 <observation: a hook up to 80 characters — for a series post “Day N/30 of explaining AI. <hook>”, up to 80 together —
-and what surfaces from it in production>
+what practice leaves out at design time, or the user's own task from work in the first person>
 
-<problem: the scenario from the GIF and its outcome in plain words>
+<problem: the scenario from the GIF and its **outcome** in plain words, one or two sentences>
 
-<solution: “To solve this, we can use <technique>.”, how it works and what it costs>
+<solution: “To solve this, we can use **<technique>**.” or the same in the user's words, how it works, **what it gives**;
+the cost, if the limit leaves room>
 
-<hashtags, up to three, on one last line, if needed: the series hashtag, if the post is from a series>
+<the series hashtag on one last line, if the post is from a series>
 ```
 
 ## Pre-approval check

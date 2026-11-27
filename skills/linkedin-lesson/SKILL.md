@@ -198,24 +198,26 @@ check” section is passed.
 
 ## Step 6. Post text
 
-The post is a practitioner's account in three paragraphs, up to 700 characters including hashtags.
-The model is `$S/examples/outbox/post.txt` (the lesson's final frame `frame.png` and composition
-`lesson.html` sit next to it); run numbers
-and the transfer go into the post only if the paragraph is unclear without them.
+The post is a practitioner's account in three short paragraphs, up to 450 characters including the
+hashtag, with two or three phrases in bold. The model is `$S/examples/outbox/post.txt` (the lesson's
+final frame `frame.png` and composition `lesson.html` sit next to it); run numbers and the transfer
+go into the post only if the paragraph is unclear without them.
 
-1. **Observation** — what practice often leaves out at design time, and where it surfaces later:
-   “A lot of problems come from edge cases and outages. We often don't plan for them when we design a
-   service, and start thinking about them only after something breaks in production.” The first
-   sentence is the hook. Each lesson has its own observation: the sentence above shows the
-   paragraph's role, not text to copy.
-2. **Problem** — the lesson's scenario, the same one as in the GIF, and its outcome in plain words:
-   “…the bank never gets the request, and Anna gets $0.”
-3. **Solution** — “To solve this, we can use <technique>.”, how it works in 2–3 sentences and what
-   it costs. In “how it works” and “how they differ”, the paragraph opens with a sentence in the same
-   role: what the mechanism does, which side to pick when.
+1. **Observation** — what practice often leaves out at design time: “A lot of problems come from
+   outages we don't plan for at design time.” When the user met the problem at work (the story at
+   step 3 often shows it), their task opens the post in the first person: “We had to cut the errors a
+   partner gets from our API.” The first sentence is the hook. Each lesson has its own observation:
+   the sentences above show the paragraph's role, not text to copy.
+2. **Problem** — the lesson's scenario, the same one as in the GIF, and its outcome in plain words,
+   in one or two sentences: “…the bank never gets the request, and Anna gets $0.”
+3. **Solution** — “To solve this, we can use <technique>.”, or the same in the user's words (“One
+   of the fixes is a circuit breaker.”), then how it works in one or two sentences; what it costs, if
+   the limit leaves room. In “how it works” and “how they differ”, the paragraph opens with a sentence
+   in the same role: what the mechanism does, which side to pick when.
 
 The analogy and the transfer go in as one sentence, only if the paragraph is unclear without them.
-Hashtags — up to three, on the last line, if needed.
+The only hashtag is the series one (below): since 2024 hashtags add no reach on LinkedIn, and
+LinkedIn is removing its hashtag feeds, so a hashtag only helps search.
 
 Hook: call `hook-writer` — 3–4 variants of the first sentence, each on a different mechanism from its
 taxonomy, each a practitioner's observation. The number of variants and the 80-character limit come
@@ -229,6 +231,12 @@ variants, each with its mechanism, into the card, the recommended one first.
 Run the text through `no-ai-slop` with the note “first sentence stays verbatim” (for a series post,
 the label and the hook). A question passes only as the hook: after it, statements.
 
+Then mark two or three short phrases with `**…**`: the problem's outcome (“Anna gets $0”), the
+technique's name and what it gives (“nothing is lost”). The card keeps the marks. LinkedIn has no
+markup, so `bold.mjs` (below) turns the marked phrases of the post file into Unicode bold letters in
+place. Search does not find these letters and screen readers stumble on them, so a phrase stays
+short and a whole sentence is never bold.
+
 If the post is part of a numbered series, the first paragraph starts with a label like “Day 2/30 of
 explaining AI.”, the hook is the next sentence, and the series hashtag goes on the last line. Take the
 label and the hashtag from the previous post of the series (its folder is in `linkedin.md`), changing
@@ -238,6 +246,7 @@ Write the text with the recommended hook into the card and into `$B/drafts/<slug
 check it (the body with each of the hook variants must pass too):
 
 ```bash
+node $R/bin/bold.mjs $B/drafts/<slug>-post.txt
 node $R/bin/postcheck.mjs $B/drafts/<slug>-post.txt
 ```
 
